@@ -1,0 +1,67 @@
+[ {
+    "id": 1,
+    "username": "o210001",
+    "name": "Aravind",
+    "password": "o210001aravind"
+},
+  {
+    "id": 2,
+    "username": "o210002",
+    "name": "Priya",
+    "password": "o210002priya"
+  },
+  {
+    "id": 3,
+    "username": "o210003",
+    "name": "Amit",
+    "password": "o210003amit"
+  },
+  {
+    "id": 4,
+    "username": "o210004",
+    "name": "Sneha",
+    "password": "o210004sneha"
+  },
+  {
+    "id": 5,
+    "username": "o210005",
+    "name": "Vikram",
+    "password": "o210005vikram"
+  },
+  {
+    "id": 6,
+    "username": "o210006",
+    "name": "Anjali",
+    "password": "o210006anjali"
+  },
+  {
+    "id": 7,
+    "username": "o210007",
+    "name": "Rohan",
+    "password": "o210007rohan"
+  },
+  {
+    "id": 8,
+    "username": "o210008",
+    "name": "Nisha",
+    "password": "o210008nisha"
+  },
+  {
+    "id": 9,
+    "username": "o210009",
+    "name": "Karan",
+    "password": "o210009karan"
+  },
+  {
+    "id": 10,
+    "username": "o210010",
+    "name": "Meera",
+    "password": "o210010meera"
+  },
+  {
+    "id": 11,
+    "username": "o210011",
+    "name": "Arjun",
+    "password": "o210011arjun"
+  }
+]

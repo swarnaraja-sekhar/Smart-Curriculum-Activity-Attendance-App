@@ -1,146 +1,57 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// /src/App.jsx  (Simple Prototype Version)
 
-// Pages
-import Home from "./pages/Home.jsx";
-import NotFound from "./pages/NotFound.jsx";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
-// Auth
-import Login from "./pages/auth/Login.jsx";
-import Register from "./pages/auth/Register.jsx";
+// --- Import Layout ---
+import Navbar from './components/layout/Navbar';
 
-// Dashboards
-import StudentDashboard from "./pages/dashboard/StudentDashboard.jsx";
-import TeacherDashboard from "./pages/dashboard/TeacherDasboard.jsx";
-import ParentDashboard from "./pages/dashboard/ParentDashboard.jsx";
+// --- Import Public Pages ---
+import HomePage from './pages/public/HomePage';
+import StudentLogin from './pages/public/StudentLogin';
+import FacultyLogin from './pages/public/FacultyLogin';
 
-// Profile
-import StudentProfile from "./pages/profile/StudentProfile.jsx";
-import TeacherProfile from "./pages/profile/TeacherProfile.jsx";
-import ParentProfile from "./pages/profile/ParentProfile.jsx";
+// --- Import Student Pages ---
+import StudentDashboardPage from './pages/student/StudentDashboardPage';
+import StudentAttendancePage from './pages/student/StudentAttendancePage';
+import StudentTimetable from './pages/student/StudentTimetable';
 
-// Attendance
-import AttendancePage from "./pages/attendace/AttendacePage.jsx";
-import MarkAttendance from "./pages/attendace/MarkAttendance.jsx";
+// --- Import Faculty Pages ---
+import FacultyDashboard from './pages/faculty/FacultyDashboard';
+import ClassReports from './pages/faculty/ClassReports';
+import TaskManager from './pages/faculty/TaskManager';
+import Footer from './components/layout/Footer';
 
-// Tasks
-import TaskPage from "./pages/tasks/TaskPage.jsx";
-import TaskDetail from "./pages/tasks/TaskDetail.jsx";
+// --- (Import your Admin pages here) ---
 
-// Timetable
-import TimetablePage from "./pages/timetable/TimetablePage.jsx";
 
-// Components
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-
-const App = () => {
+function App() {
   return (
-    <Router>
+    <>
+      <Navbar /> 
+      
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* === PUBLIC ROUTES === */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/student-login" element={<StudentLogin />} />
+        <Route path="/faculty-login" element={<FacultyLogin />} />
 
-        {/* Student Routes */}
-        <Route
-          path="/student/dashboard"
-          element={
-            <ProtectedRoute role="student">
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/profile"
-          element={
-            <ProtectedRoute role="student">
-              <StudentProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/attendance"
-          element={
-            <ProtectedRoute role="student">
-              <AttendancePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/mark-attendance"
-          element={
-            <ProtectedRoute role="student">
-              <MarkAttendance />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/tasks"
-          element={
-            <ProtectedRoute role="student">
-              <TaskPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/tasks/:id"
-          element={
-            <ProtectedRoute role="student">
-              <TaskDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/timetable"
-          element={
-            <ProtectedRoute role="student">
-              <TimetablePage />
-            </ProtectedRoute>
-          }
-        />
+        {/* === ALL OTHER PAGES (Public for Demo) === */}
+        {/* These are all public so you can click links to demo them */}
+        <Route path="/student-dashboard" element={<StudentDashboardPage />} />
+        <Route path="/student-attendance" element={<StudentAttendancePage />} />
+        <Route path="/student-timetable" element={<StudentTimetable />} />
+        
+        <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
+        <Route path="/faculty-reports" element={<ClassReports />} />
+        <Route path="/faculty-tasks" element={<TaskManager />} />
 
-        {/* Teacher Routes */}
-        <Route
-          path="/teacher/dashboard"
-          element={
-            <ProtectedRoute role="teacher">
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/profile"
-          element={
-            <ProtectedRoute role="teacher">
-              <TeacherProfile />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Parent Routes */}
-        <Route
-          path="/parent/dashboard"
-          element={
-            <ProtectedRoute role="parent">
-              <ParentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/parent/profile"
-          element={
-            <ProtectedRoute role="parent">
-              <ParentProfile />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Catch-all */}
-        <Route path="*" element={<NotFound />} />
+        {/* Add your Admin page routes here... */}
+        
       </Routes>
-    </Router>
+      <Footer />
+    </>
   );
-};
+}
 
 export default App;
