@@ -1,7 +1,8 @@
 // /src/pages/student/StudentAttendance.jsx
 
-import React from 'react';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import React, { useState } from 'react';
+import { CheckBadgeIcon, QrCodeIcon } from '@heroicons/react/24/solid';
+import QRScanner from '../../components/common/QRScanner';
 
 // --- MOCK DATA FOR PROTOTYPE ---
 // This data array lists the student's attendance per subject.
@@ -45,17 +46,42 @@ const SubjectAttendanceCard = ({ subject }) => {
 
 
 export default function StudentAttendance() {
+  const [showScanner, setShowScanner] = useState(false);
+  
   // Calculate overall attendance stats for the summary card
   const totalAttended = attendanceData.reduce((acc, subject) => acc + subject.attended, 0);
   const totalClasses = attendanceData.reduce((acc, subject) => acc + subject.total, 0);
   const overallPercent = Math.round((totalAttended / totalClasses) * 100);
   const overallIsDanger = overallPercent < 75;
 
+  const handleScan = (result) => {
+    // Handle the QR code result here
+    console.log('QR Code scanned:', result);
+    setShowScanner(false);
+    // TODO: Implement attendance marking logic
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6 md:p-8">
       <div className="container mx-auto max-w-7xl">
-
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">My Attendance Report</h1>
+        {/* Header with Scan Button */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">My Attendance Report</h1>
+          <button
+            onClick={() => setShowScanner(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            <QrCodeIcon className="w-6 h-6" />
+            <span className="font-medium">Scan Attendance QR</span>
+          </button>
+          
+          {showScanner && (
+            <QRScanner
+              onClose={() => setShowScanner(false)}
+              onScan={handleScan}
+            />
+          )}
+        </div>
 
         {/* --- Overall Summary Card --- */}
         <div className={`bg-white rounded-xl shadow-lg p-6 mb-8 border-l-8 ${overallIsDanger ? 'border-red-500' : 'border-green-500'}`}>

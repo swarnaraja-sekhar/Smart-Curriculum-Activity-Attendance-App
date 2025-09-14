@@ -1,0 +1,55 @@
+{
+  "Sunday": [    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Data Structures & Algorithms" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Database Management Systems" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Operating Systems" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 02:00 PM", "type": "class", "title": "Web Development" },
+    { "time": "02:00 PM - 03:00 PM", "type": "class", "title": "Software Engineering" },
+    { "time": "03:00 PM - 04:00 PM", "type": "class", "title": "Professional Ethics" }],
+  "Monday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Data Structures & Algorithms" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Database Management Systems" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Operating Systems" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 02:00 PM", "type": "class", "title": "Web Development" },
+    { "time": "02:00 PM - 03:00 PM", "type": "class", "title": "Software Engineering" },
+    { "time": "03:00 PM - 04:00 PM", "type": "class", "title": "Professional Ethics" }
+  ],
+  "Tuesday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Database Management Systems" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Operating Systems" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Web Development" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 04:00 PM", "type": "class", "title": "Operating Systems Lab" }
+  ],
+  "Wednesday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Software Engineering" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Professional Ethics" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Data Structures & Algorithms" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 04:00 PM", "type": "class", "title": "Web Development Lab" }
+  ],
+  "Thursday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Operating Systems" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Web Development" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Software Engineering" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 04:00 PM", "type": "class", "title": "DBMS Lab" }
+  ],
+  "Friday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Data Structures & Algorithms" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Database Management Systems" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Professional Ethics" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 02:00 PM", "type": "class", "title": "Placement Training" },
+    { "time": "02:00 PM - 03:00 PM", "type": "class", "title": "Career Guidance" },
+    { "time": "03:00 PM - 04:00 PM", "type": "free", "title": "Self Study" }
+  ],
+  "Saturday": [
+    { "time": "09:00 AM - 10:00 AM", "type": "class", "title": "Project Work" },
+    { "time": "10:00 AM - 11:00 AM", "type": "class", "title": "Project Work" },
+    { "time": "11:00 AM - 12:00 PM", "type": "class", "title": "Project Work" },
+    { "time": "12:00 PM - 01:00 PM", "type": "free", "title": "Lunch Break" },
+    { "time": "01:00 PM - 04:00 PM", "type": "free", "title": "Self Study & Assignments" }
+  ]
+}

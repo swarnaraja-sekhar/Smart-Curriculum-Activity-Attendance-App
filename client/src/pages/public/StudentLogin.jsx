@@ -2,30 +2,27 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // 1. IMPORT THE AUTH HOOK
+import { useAuth } from '../../context/AuthContext'; // 1. Import the hook
 
 export default function StudentLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth(); // 2. GET THE GLOBAL LOGIN FUNCTION
-
-  // 3. REMOVE the big 'studentData' array. It now lives in AuthContext.jsx.
+  const { login } = useAuth(); // 2. Get the global login function
 
   const handleStudentLogin = async (e) => {
     e.preventDefault();
-    
-    // 4. REPLACE the old validation logic with this single line.
-    // This calls the login function from AuthContext, which handles everything.
-    const success = login(username, password, 'student'); 
-
-    // If the login function returns false, it means the user was not found.
-    if (!success) {
-      setError('Invalid username or password. Please try again.');
+    try {
+      // 3. Call the global login function
+      const success = login(username, password, 'student'); 
+      if (!success) {
+        setError('Invalid username or password.');
+      }
+      // If successful, the AuthContext automatically handles the redirect.
+    // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+      setError('An error occurred. Please try again.');
     }
-    
-    // If login is successful, the AuthContext will automatically update the 'user' state
-    // and redirect the user. You don't need to do anything else here.
   };
 
   return (
@@ -35,11 +32,8 @@ export default function StudentLogin() {
           Student Portal Login
         </h2>
         <form onSubmit={handleStudentLogin} className="space-y-5">
-          <div>
-            <label 
-              htmlFor="username" 
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
+           <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-600 mb-1">
               Student Username
             </label>
             <input
@@ -48,15 +42,12 @@ export default function StudentLogin() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               placeholder="e.g., o210001"
             />
           </div>
           <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
               Password
             </label>
             <input
@@ -65,21 +56,12 @@ export default function StudentLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               placeholder="••••••••"
             />
           </div>
-
-          {error && (
-            <p className="text-sm text-red-600 text-center">
-              {error}
-            </p>
-          )}
-
-          <button 
-            type="submit"
-            className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
             Login as Student
           </button>
         </form>

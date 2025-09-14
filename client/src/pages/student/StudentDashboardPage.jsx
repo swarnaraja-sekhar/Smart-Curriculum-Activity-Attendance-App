@@ -1,143 +1,245 @@
-// /src/pages/student/StudentDashboard.jsx
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  BookOpenIcon, 
+  ClockIcon, 
+  SparklesIcon, 
+  ArrowRightIcon, 
+  ChartPieIcon, 
+  StarIcon,
+  LightBulbIcon,
+  CheckCircleIcon,
+  QrCodeIcon
+} from '@heroicons/react/24/outline';
+import { useAuth } from '../../context/AuthContext';
+import { weeklyStudyPlan, taskDatabase } from '../../context/AuthContext'; // Import data
+import timetableData from '../../data/timetable.json';
+import QRScanner from '../../components/common/QRScanner';
 
-import React from 'react';
-import { BookOpenIcon, ClockIcon, SparklesIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const todayName = dayNames[new Date().getDay()];
 
-// --- MOCK DATA FOR PROTOTYPE ---
-// This is the data for a single student. We are hardcoding "Raja".
-const studentName = "Raja";
-const studentProfile = {
-  username: "o210001",
-  major: "Computer Science",
-  year: 3,
-  attendance: "92%",
-  tasksCompleted: 5,
+// --- Helper function to get current time slot ---
+const getCurrentTimeSlot = (schedule) => {
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+
+  for (const item of schedule) {
+    const [startTimeStr, endTimeStr] = item.time.split(' - ');
+    const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+    const [endHour, endMinute] = endTimeStr.split(':').map(Number);
+    
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+
+    if (currentTime >= startTime && currentTime < endTime) {
+      return { ...item, isCurrent: true };
+    }
+  }
+  return null;
 };
 
-// This is the student's schedule, including a free period with a suggested task
-const scheduleData = [
-  { time: "09:00 AM - 10:00 AM", type: "class", title: "Data Structures & Algorithms" },
-  { time: "10:00 AM - 11:00 AM", type: "free", task: {
-      title: "Python Algorithm Practice",
-      description: "Based on your interest in 'AI', complete two 'Medium' problems on data sorting."
-  }},
-  { time: "11:00 AM - 12:00 PM", type: "class", title: "Database Management Systems" },
-  { time: "12:00 PM - 01:00 PM", type: "free", task: {
-      title: "Project Brainstorming",
-      description: "Develop a high-level schema for your upcoming hackathon project."
-  }},
-  { time: "01:00 PM - 02:00 PM", type: "break", title: "Lunch Break" },
-  { time: "02:00 PM - 03:00 PM", type: "class", title: "Operating Systems Lab" },
-];
 
-export default function StudentDashboard() {
+export default function StudentDashboardPage() {
+  const { user } = useAuth();
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
+  const [attendance, setAttendance] = useState(() => {
+    const saved = localStorage.getItem(`attendance_${user?.id}`);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const handleScan = (data) => {
+    setShowQRScanner(false);
+    if (data) {
+      try {
+        const qrData = JSON.parse(data);
+        const now = Date.now();
+
+        if (now > qrData.expiryTime) {
+          setScanResult({ success: false, message: 'Expired QR code.' });
+          return;
+        }
+
+        if (attendance.some(a => a.sessionId === qrData.sessionId)) {
+          setScanResult({ success: false, message: 'Attendance already marked for this session.' });
+          return;
+        }
+
+        const newAttendance = {
+          sessionId: qrData.sessionId,
+          timestamp: now,
+          courseId: qrData.courseId,
+          facultyName: qrData.facultyName,
+        };
+
+        const updatedAttendance = [...attendance, newAttendance];
+        setAttendance(updatedAttendance);
+        localStorage.setItem(`attendance_${user.id}`, JSON.stringify(updatedAttendance));
+
+        setScanResult({ success: true, message: `Attendance for ${qrData.courseId} marked!` });
+
+      } catch (err) {
+        setScanResult({ success: false, message: 'Invalid QR code.' });
+      }
+    }
+  };
+
+  // --- Data for the dashboard ---
+  const todaysSchedule = timetableData[todayName] || [];
+  const totalSessions = 100; // Mock total sessions
+  const attendancePercentage = ((attendance.length / totalSessions) * 100).toFixed(1);
+  
+  const todaysTopic = user?.longTermGoal ? weeklyStudyPlan[user.longTermGoal]?.[todayName] : "General Studies";
+  
+  const recommendedTasks = taskDatabase.filter(task => 
+    (task.goal === user?.longTermGoal && task.topic === todaysTopic) || task.goal === null
+  ).slice(0, 3); // Get up to 3 tasks
+
+  const currentSlot = getCurrentTimeSlot(todaysSchedule);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto max-w-7xl">
         
-        {/* --- Welcome Header --- */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {studentName}!
+        {/* --- Header --- */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Welcome back, {user.name}!
           </h1>
-          <p className="text-lg text-gray-600">
-            Here's your schedule and suggested tasks for today.
+          <p className="text-lg text-gray-600 mt-1">
+            Here’s your plan for today. Let's make it a productive one.
           </p>
         </div>
 
-        {/* --- Main Dashboard Layout --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* --- Scan Button and Modal --- */}
+        <button
+          onClick={() => setShowQRScanner(true)}
+          className="mb-8 flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <QrCodeIcon className="w-6 h-6" />
+          <span>Scan Attendance QR</span>
+        </button>
 
-          {/* --- Center Column: Today's Schedule & Tasks --- */}
-          <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Today's Timeline</h2>
-            
-            {scheduleData.map((item, index) => {
-              
-              // --- THIS IS THE SMART TASK CARD ---
-              // If the type is 'free', we render the special task card.
-              if (item.type === 'free') {
-                return (
-                  <div key={index} className="bg-blue-50 border-2 border-blue-200 rounded-lg shadow-sm p-5 flex items-start space-x-4">
-                    <div className="flex-shrink-0 bg-blue-100 rounded-full p-3">
-                      <SparklesIcon className="w-6 h-6 text-blue-700" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-blue-800">{item.time}</p>
-                      <h3 className="text-xl font-semibold text-gray-900">Suggested Task: {item.task.title}</h3>
-                      <p className="text-gray-700 mt-1">{item.task.description}</p>
-                      <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
-                        Start Task
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
+        {showQRScanner && (
+          <QRScanner 
+            onClose={() => setShowQRScanner(false)}
+            onScan={handleScan}
+          />
+        )}
 
-              // --- THIS IS A REGULAR CLASS CARD ---
-              if (item.type === 'class') {
-                return (
-                  <div key={index} className="bg-white rounded-lg shadow-sm p-5 flex items-start space-x-4">
-                    <div className="flex-shrink-0 bg-gray-100 rounded-full p-3">
-                      <BookOpenIcon className="w-6 h-6 text-gray-600" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-500">{item.time}</p>
-                      <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
-                    </div>
-                  </div>
-                );
-              }
-
-              // --- THIS IS A BREAK CARD ---
-              if (item.type === 'break') {
-                 return (
-                  <div key={index} className="bg-white rounded-lg shadow-sm p-5 flex items-start space-x-4 border-l-4 border-gray-300">
-                     <div className="flex-shrink-0 bg-gray-100 rounded-full p-3">
-                      <ClockIcon className="w-6 h-6 text-gray-500" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-500">{item.time}</p>
-                      <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
-                    </div>
-                  </div>
-                )
-              }
-              return null; // Always return null as a fallback in a map
-            })}
+        {scanResult && (
+          <div className={`p-4 mb-6 rounded-lg ${scanResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {scanResult.message}
           </div>
+        )}
 
-          {/* --- Right Sidebar: Profile & Stats --- */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center space-x-4 mb-4">
-                 <UserCircleIcon className="w-16 h-16 text-gray-400"/>
-                 <div>
-                    <h3 className="text-xl font-bold text-gray-900">{studentName}</h3>
-                    <p className="text-sm text-gray-500">{studentProfile.username}</p>
-                 </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-gray-700"><strong>Major:</strong> {studentProfile.major}</p>
-                <p className="text-gray-700"><strong>Year:</strong> {studentProfile.year}</p>
-              </div>
+        {/* --- Overview Cards Grid --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Attendance Card */}
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <ChartPieIcon className="w-7 h-7 text-blue-600" />
             </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Overall Attendance</span>
-                  <span className="font-bold text-green-600 text-lg">{studentProfile.attendance}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Suggested Tasks Completed</span>
-                  <span className="font-bold text-blue-600 text-lg">{studentProfile.tasksCompleted}</span>
-                </div>
-              </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Attendance</h3>
+              <p className="text-3xl font-bold text-blue-600">{attendancePercentage}%</p>
+              <Link to="/student-attendance" className="text-sm font-medium text-blue-600 hover:underline mt-1">View Report</Link>
             </div>
           </div>
 
+          {/* Goal & Interests Card */}
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
+            <div className="bg-green-100 p-3 rounded-full">
+              <StarIcon className="w-7 h-7 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">My Focus</h3>
+              <p className="font-bold text-gray-700 text-lg">{user.longTermGoal}</p>
+              <p className="text-sm text-gray-500">{user.interests.join(', ')}</p>
+            </div>
+          </div>
+
+          {/* Today's Topic Card */}
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
+            <div className="bg-yellow-100 p-3 rounded-full">
+              <LightBulbIcon className="w-7 h-7 text-yellow-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Today's Topic</h3>
+              <p className="font-bold text-gray-700 text-lg">{todaysTopic}</p>
+               <Link to="/student-tasks" className="text-sm font-medium text-yellow-700 hover:underline mt-1">All Tasks</Link>
+            </div>
+          </div>
+        </div>
+
+        {/* --- Main Content: Schedule and Tasks --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Left Column: Today's Schedule */}
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Today's Schedule ({todayName})</h2>
+            <div className="space-y-4">
+              {todaysSchedule.length > 0 ? (
+                todaysSchedule.map((item, index) => {
+                  const isCurrent = currentSlot?.time === item.time;
+                  return (
+                    <div 
+                      key={index} 
+                      className={`bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4 transition-all ${isCurrent ? 'ring-2 ring-blue-500 shadow-lg' : ''}`}
+                    >
+                      <div className={`p-3 rounded-full ${item.type === 'class' ? 'bg-gray-100' : 'bg-blue-100'}`}>
+                        {item.type === 'class' ? <BookOpenIcon className="w-6 h-6 text-gray-600" /> : <SparklesIcon className="w-6 h-6 text-blue-600" />}
+                      </div>
+                      <div className="flex-grow">
+                        <p className="font-semibold text-gray-500">{item.time}</p>
+                        <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                      </div>
+                      {isCurrent && <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">NOW</span>}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                  <h3 className="text-xl font-bold text-gray-800">No classes scheduled today!</h3>
+                  <p className="text-gray-600">Use this time to focus on your recommended tasks.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Recommended Tasks */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Recommended Tasks</h2>
+            <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+              {recommendedTasks.length > 0 ? (
+                recommendedTasks.map((task, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-gray-800">{task.title}</p>
+                      <p className="text-sm text-gray-500">{task.topic}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600">No specific tasks for today's topic. Check the main tasks page for more.</p>
+              )}
+              <div className="pt-4">
+                <Link 
+                  to="/student-tasks"
+                  className="w-full flex items-center justify-center bg-blue-600 text-white font-medium px-4 py-2.5 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                >
+                  View All Tasks
+                  <ArrowRightIcon className="w-4 h-4 ml-2" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

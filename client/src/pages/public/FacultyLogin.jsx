@@ -1,47 +1,52 @@
+
 // /src/pages/public/FacultyLoginPage.jsx
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Import useNavigate
-
-// --- 1. YOUR FACULTY DATA ---
-// A separate mock data array for faculty.
-// Note: We are using 'email' as the login field, unlike the student 'username'.
-const facultyData = [
-  { "id": 101, "email": "sharma@college.edu", "name": "Dr. Sharma", "password": "password123" },
-  { "id": 102, "email": "gupta@college.edu", "name": "Prof. Gupta", "password": "password123" },
-  { "id": 103, "email": "patel@college.edu", "name": "Dr. Patel", "password": "password456" }
-];
-
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import facultyData from '../../data/facultyData.json';
 
 export default function FacultyLogin() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // State for login errors
-  const navigate = useNavigate(); // 2. Initialize the hook
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  // --- 3. Updated validation logic ---
   const handleFacultyLogin = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
     
-    // Check the facultyData array for a match
-    const foundUser = facultyData.find(
-      (user) => user.email === email && user.password === password
-    );
+    try {
+      // Check credentials against facultyData.json
+      const faculty = facultyData.find(
+        (f) => f.username === username && f.password === password
+      );
 
-    if (foundUser) {
-      // SUCCESS!
-      setError('');
-      console.log('Login successful for:', foundUser.name);
-      alert(`Welcome, ${foundUser.name}!`);
+      if (faculty) {
+        const success = await login({
+          id: faculty.id,
+          name: faculty.name,
+          username: faculty.username,
+          role: 'faculty',
+          department: faculty.department,
+          designation: faculty.designation,
+          specialization: faculty.specialization,
+          subjects: faculty.subjects,
+          classIds: faculty.classIds
+        });
 
-      // 4. This is the redirect!
-      // This navigates the user to the faculty dashboard.
-      navigate('/faculty-dashboard');
-
-    } else {
-      // FAILED!
-      console.log('Login failed: Invalid email or password');
-      setError('Invalid email or password. Please try again.');
+        if (success) {
+          navigate('/faculty-dashboard');
+        } else {
+          setError('Login failed. Please try again.');
+        }
+      } else {
+        setError('Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An error occurred. Please try again.');
     }
   };
 
@@ -53,27 +58,21 @@ export default function FacultyLogin() {
         </h2>
         <form onSubmit={handleFacultyLogin} className="space-y-5">
           <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
-              Faculty Email
+            <label htmlFor="username" className="block text-sm font-medium text-gray-600 mb-1">
+              Faculty ID
             </label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="professor@college.edu"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              placeholder="Enter your faculty ID (e.g., f210001)"
             />
           </div>
           <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
               Password
             </label>
             <input
@@ -82,22 +81,12 @@ export default function FacultyLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               placeholder="••••••••"
             />
           </div>
-
-          {/* --- 5. Show error message if it exists --- */}
-          {error && (
-            <p className="text-sm text-red-600 text-center">
-              {error}
-            </p>
-          )}
-
-          <button 
-            type="submit"
-            className="w-full py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-900 transition focus:outline-none focus:ring-2 focus:ring-gray-700"
-          >
+          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          <button type="submit" className="w-full py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-900">
             Login as Faculty
           </button>
         </form>

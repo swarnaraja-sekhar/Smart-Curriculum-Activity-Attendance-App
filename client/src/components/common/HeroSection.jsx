@@ -1,5 +1,6 @@
 // /src/pages/public/HomePage.jsx
 
+import { ChartBarIcon, ClockIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -54,7 +55,7 @@ export default function HomePage() {
             {/* Feature 1: Attendance */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
               <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                {/* <ClockIcon className="w-9 h-9 text-blue-600" /> */}
+                <ClockIcon className="w-9 h-9 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 Secure Automated Attendance
@@ -68,7 +69,7 @@ export default function HomePage() {
             {/* Feature 2: Smart Tasks */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
               <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                {/* <SparklesIcon className="w-9 h-9 text-blue-600" /> */}
+                <SparklesIcon className="w-9 h-9 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 Smart Task Suggestions
@@ -82,7 +83,7 @@ export default function HomePage() {
             {/* Feature 3: Analytics */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
               <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                {/* <ChartBarIcon className="w-9 h-9 text-blue-600" /> */}
+                <ChartBarIcon className="w-9 h-9 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 Real-Time Data Insights
