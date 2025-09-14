@@ -1,19 +1,28 @@
 // /src/components/layout/Navbar.jsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { UserCircleIcon, ArrowLeftOnRectangleIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, ArrowLeftOnRectangleIcon, QrCodeIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const activeLinkStyle = { fontWeight: '600', color: '#2563EB' };
 
 export default function Navbar() {
   const { user, logout } = useAuth(); // Get user state and logout function
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   const renderLinks = () => {
@@ -21,12 +30,15 @@ export default function Navbar() {
     if (user && user.role === 'student') {
       return (
         <>
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <NavLink to="/student-dashboard" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Dashboard</NavLink>
             <NavLink to="/student-attendance" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>My Attendance</NavLink>
             <NavLink to="/student-timetable" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Time Table</NavLink>
           </div>
-          <div className="flex items-center space-x-4">
+          
+          {/* Desktop Right Side */}
+          <div className="hidden md:flex items-center space-x-4">
             {/* QR Code Scanner Button */}
             <Link
               to="/scan-attendance"
@@ -52,6 +64,74 @@ export default function Navbar() {
               <ArrowLeftOnRectangleIcon className="w-6 h-6" />
             </button>
           </div>
+
+          {/* Mobile Right Side - QR Scanner only */}
+          <div className="md:hidden flex items-center">
+            {/* QR Code Scanner Button - Mobile */}
+            <Link
+              to="/scan-attendance"
+              className="flex items-center text-gray-600 hover:text-blue-600 transition bg-blue-50 p-2 rounded-lg"
+              title="Scan QR for Attendance"
+            >
+              <QrCodeIcon className="w-6 h-6" />
+            </Link>
+          </div>
+
+          {/* Mobile Menu Overlay */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t z-50">
+              <div className="px-6 py-4 space-y-4">
+                <NavLink 
+                  to="/student-dashboard" 
+                  className="block text-gray-700 hover:text-blue-600 py-2"
+                  onClick={closeMobileMenu}
+                  style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink 
+                  to="/student-attendance" 
+                  className="block text-gray-700 hover:text-blue-600 py-2"
+                  onClick={closeMobileMenu}
+                  style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+                >
+                  My Attendance
+                </NavLink>
+                <NavLink 
+                  to="/student-timetable" 
+                  className="block text-gray-700 hover:text-blue-600 py-2"
+                  onClick={closeMobileMenu}
+                  style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+                >
+                  Time Table
+                </NavLink>
+                
+                <hr className="border-gray-200" />
+                
+                {/* Profile Link - Mobile */}
+                <Link 
+                  to="/student-profile" 
+                  className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 py-2"
+                  onClick={closeMobileMenu}
+                >
+                  <UserCircleIcon className="w-6 h-6" />
+                  <span className="font-medium">{user.name}</span>
+                </Link>
+                
+                {/* Logout Button - Mobile */}
+                <button 
+                  onClick={() => {
+                    handleLogout();
+                    closeMobileMenu();
+                  }}
+                  className="flex items-center space-x-3 text-gray-500 hover:text-blue-600 py-2 w-full text-left"
+                >
+                  <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          )}
         </>
       );
     }
@@ -117,11 +197,31 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md relative">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="font-bold text-2xl text-blue-600">
-          SmartTrack
-        </Link>
+        {/* Left side - Mobile menu button and logo */}
+        <div className="flex items-center space-x-3">
+          {/* Mobile Menu Toggle - Only show for students */}
+          {user && user.role === 'student' && (
+            <button
+              onClick={toggleMobileMenu}
+              className="md:hidden text-gray-600 hover:text-blue-600 p-2"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="w-6 h-6" />
+              ) : (
+                <Bars3Icon className="w-6 h-6" />
+              )}
+            </button>
+          )}
+          
+          <Link to="/" className="font-bold text-2xl text-blue-600">
+            SmartTrack
+          </Link>
+        </div>
+
+        {/* Right side - Navigation links */}
         {renderLinks()}
       </div>
     </nav>
