@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpenIcon, 
@@ -45,9 +45,23 @@ export default function StudentDashboardPage() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [attendance, setAttendance] = useState(() => {
-    const saved = localStorage.getItem(`attendance_${user?.id}`);
-    return saved ? JSON.parse(saved) : [];
+    // Only try to get attendance if user exists and has an id
+    if (user?.id) {
+      const saved = localStorage.getItem(`attendance_${user.id}`);
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
+
+  // Update attendance when user changes
+  useEffect(() => {
+    if (user?.id) {
+      const saved = localStorage.getItem(`attendance_${user.id}`);
+      if (saved) {
+        setAttendance(JSON.parse(saved));
+      }
+    }
+  }, [user]);
 
   const handleScan = (data) => {
     setShowQRScanner(false);
@@ -75,7 +89,11 @@ export default function StudentDashboardPage() {
 
         const updatedAttendance = [...attendance, newAttendance];
         setAttendance(updatedAttendance);
-        localStorage.setItem(`attendance_${user.id}`, JSON.stringify(updatedAttendance));
+        
+        // Make sure user exists before trying to access user.id
+        if (user?.id) {
+          localStorage.setItem(`attendance_${user.id}`, JSON.stringify(updatedAttendance));
+        }
 
         setScanResult({ success: true, message: `Attendance for ${qrData.courseId} marked!` });
 
@@ -88,7 +106,7 @@ export default function StudentDashboardPage() {
   // --- Data for the dashboard ---
   const todaysSchedule = timetableData[todayName] || [];
   const totalSessions = 100; // Mock total sessions
-  const attendancePercentage = ((attendance.length / totalSessions) * 100).toFixed(1);
+  const attendancePercentage = totalSessions > 0 ? ((attendance.length / totalSessions) * 100).toFixed(1) : "0.0";
   
   const todaysTopic = user?.longTermGoal ? weeklyStudyPlan[user.longTermGoal]?.[todayName] : "General Studies";
   
@@ -159,8 +177,8 @@ export default function StudentDashboardPage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-800">My Focus</h3>
-              <p className="font-bold text-gray-700 text-lg">{user.longTermGoal}</p>
-              <p className="text-sm text-gray-500">{user.interests.join(', ')}</p>
+              <p className="font-bold text-gray-700 text-lg">{user?.longTermGoal || "No goal set"}</p>
+              <p className="text-sm text-gray-500">{user?.interests ? user.interests.join(', ') : "No interests set"}</p>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 // /src/App.jsx  (Simple Prototype Version)
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext'; 
 // --- Import Layout ---
 import Navbar from './components/layout/Navbar';
@@ -30,42 +30,62 @@ import Footer from './components/layout/Footer';
 
 function App() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  // If user logs in, navigate to the appropriate dashboard
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'student' && window.location.pathname === '/student-login') {
+        navigate('/student-dashboard');
+      } else if (user.role === 'faculty' && window.location.pathname === '/faculty-login') {
+        navigate('/faculty-dashboard');
+      }
+    }
+  }, [user, navigate]);
+
+  // Helper for student protected routes
+  const ProtectedStudentRoute = ({ children }) => {
+    if (!user) return <Navigate to="/student-login" />;
+    if (user.role !== 'student') return <Navigate to="/" />;
+    return children;
+  };
+
+  // Helper for faculty protected routes
+  const ProtectedFacultyRoute = ({ children }) => {
+    if (!user) return <Navigate to="/faculty-login" />;
+    if (user.role !== 'faculty') return <Navigate to="/" />;
+    return children;
+  };
+
   return (
     <>
       <Navbar /> 
-       <GlobalNotification />
+      <GlobalNotification />
       <Routes>
         {/* === PUBLIC ROUTES === */}
         <Route path="/" element={<HomePage />} />
- <Route 
-          path="/student-login" 
-          element={!user ? <StudentLogin /> : <Navigate to="/student-dashboard" />} 
-        />
-        <Route 
-          path="/faculty-login" 
-          element={!user ? <FacultyLogin /> : <Navigate to="/faculty-dashboard" />} 
-        />
-                <Route 
-          path="/student-tasks"  /* <-- 4. ADD THE NEW ROUTE */
-          element={user && user.role === 'student' ? <StudentTaskPage /> : <Navigate to="/student-login" />}
-        />
-
+        <Route path="/student-login" element={<StudentLogin />} />
+        <Route path="/faculty-login" element={<FacultyLogin />} />
         {/* === STUDENT PROTECTED ROUTES === */}
         <Route 
+          path="/student-tasks" 
+          element={<ProtectedStudentRoute><StudentTaskPage /></ProtectedStudentRoute>} 
+        />
+        <Route 
           path="/student-dashboard" 
-          element={user && user.role === 'student' ? <StudentDashboardPage /> : <Navigate to="/student-login" />}
+          element={<ProtectedStudentRoute><StudentDashboardPage /></ProtectedStudentRoute>} 
         />
         <Route 
           path="/student-attendance" 
-          element={user && user.role === 'student' ? <StudentAttendancePage /> : <Navigate to="/student-login" />}
+          element={<ProtectedStudentRoute><StudentAttendancePage /></ProtectedStudentRoute>} 
         />
-          <Route 
+        <Route 
           path="/student-timetable" 
-          element={user && user.role === 'student' ? <StudentTimetable /> : <Navigate to="/student-login" />}
+          element={<ProtectedStudentRoute><StudentTimetable /></ProtectedStudentRoute>} 
         />
         <Route 
           path="/student-profile"
-          element={user && user.role === 'student' ? <StudentProfilePage /> : <Navigate to="/student-login" />}
+          element={<ProtectedStudentRoute><StudentProfilePage /></ProtectedStudentRoute>} 
         />
         {/* <Route path="/student-timetable" element={user && user.role === 'student' ? <StudentTimetable /> : <Navigate to="/student-login" />} /> */}
 
@@ -73,23 +93,23 @@ function App() {
         {/* === FACULTY PROTECTED ROUTES === */}
         <Route 
           path="/faculty-dashboard" 
-          element={user && user.role === 'faculty' ? <FacultyDashboard /> : <Navigate to="/faculty-login" />}
+          element={<ProtectedFacultyRoute><FacultyDashboard /></ProtectedFacultyRoute>} 
         />
         <Route 
           path="/faculty-reports" 
-          element={user && user.role === 'faculty' ? <ClassReports /> : <Navigate to="/faculty-login" />}
+          element={<ProtectedFacultyRoute><ClassReports /></ProtectedFacultyRoute>} 
         />
-         <Route 
+        <Route 
           path="/faculty-tasks" 
-          element={user && user.role === 'faculty' ? <TaskManager /> : <Navigate to="/faculty-login" />}
+          element={<ProtectedFacultyRoute><TaskManager /></ProtectedFacultyRoute>} 
         />
         <Route
           path="/faculty-students"
-          element={user && user.role === 'faculty' ? <StudentList /> : <Navigate to="/faculty-login" />}
+          element={<ProtectedFacultyRoute><StudentList /></ProtectedFacultyRoute>} 
         />
         <Route
           path="/faculty-attendance"
-          element={user && user.role === 'faculty' ? <FacultyAttendance /> : <Navigate to="/faculty-login" />}
+          element={<ProtectedFacultyRoute><FacultyAttendance /></ProtectedFacultyRoute>} 
         />
         
         {/* === CATCH-ALL ROUTE === */}

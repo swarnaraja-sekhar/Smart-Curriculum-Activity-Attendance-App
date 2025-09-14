@@ -1,12 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import studentData from '../data/studentData.json';
+import facultyData from '../data/facultyData.json';
 // --- (Your mock studentData and facultyData stay the same, but with goals/interests) ---
-const studentData = [
-  { "id": 1, "username": "o210001", "name": "Raja", "password": "o210001raja", "role": "student", "longTermGoal": "GATE", "interests": ["AI/ML"] },
-  { "id": 2, "username": "o210002", "name": "Priya", "password": "o210002priya", "role": "student", "longTermGoal": "Placement", "interests": ["Web Development"] },
-];
-const facultyData = [ /* ... */ ];
+
 
 // --- NEW: WEEKLY STUDY PLAN ---
 // This defines the topic of the day for each long-term goal.
@@ -122,8 +119,17 @@ export function AuthProvider({ children }) {
 
   const login = async (userData) => {
     try {
+      console.log('AuthContext login called with:', userData);
+      console.log('localStorage before setting:', localStorage.getItem('user'));
+      
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      console.log('localStorage after setting:', localStorage.getItem('user'));
       setUser(userData);
+      
+      // Verify user state was updated
+      console.log('User state after setting:', userData);
+      
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -134,8 +140,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    navigate('/');
     setNotification({ message: "You have been logged out.", type: "info" });
+    // We'll handle navigation in the component that calls logout instead
   };
   
   const value = { user, login, logout, notification, setNotification };

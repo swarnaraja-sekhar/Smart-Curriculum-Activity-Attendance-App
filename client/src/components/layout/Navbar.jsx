@@ -1,7 +1,7 @@
 // /src/components/layout/Navbar.jsx
 
-import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UserCircleIcon, ArrowLeftOnRectangleIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 
@@ -9,6 +9,12 @@ const activeLinkStyle = { fontWeight: '600', color: '#2563EB' };
 
 export default function Navbar() {
   const { user, logout } = useAuth(); // Get user state and logout function
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const renderLinks = () => {
     // === STUDENT IS LOGGED IN ===
@@ -42,7 +48,7 @@ export default function Navbar() {
             </Link>
 
             {/* Logout Button */}
-            <button onClick={logout} className="text-gray-500 hover:text-blue-600" title="Logout">
+            <button onClick={handleLogout} className="text-gray-500 hover:text-blue-600" title="Logout">
               <ArrowLeftOnRectangleIcon className="w-6 h-6" />
             </button>
           </div>
@@ -84,7 +90,7 @@ export default function Navbar() {
 
             {/* Logout Button */}
             <button 
-              onClick={logout} 
+              onClick={handleLogout} 
               className="text-gray-500 hover:text-blue-600 flex items-center space-x-2" 
               title="Logout"
             >

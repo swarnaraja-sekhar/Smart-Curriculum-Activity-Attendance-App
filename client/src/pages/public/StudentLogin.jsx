@@ -1,26 +1,80 @@
 // /src/pages/public/StudentLoginPage.jsx
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // 1. Import the hook
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import studentData from '../../data/studentData.json';
 
 export default function StudentLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth(); // 2. Get the global login function
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  // Log localStorage data when component mounts
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      console.log('Current localStorage user data:', userData ? JSON.parse(userData) : null);
+    } catch (error) {
+      console.error('Error parsing localStorage data:', error);
+    }
+  }, []);
 
   const handleStudentLogin = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
+    
     try {
-      // 3. Call the global login function
-      const success = login(username, password, 'student'); 
-      if (!success) {
-        setError('Invalid username or password.');
+      console.log('Attempting login with:', username); // Debug log
+      
+      // Check credentials against studentData.json
+      const student = studentData.find(
+        (s) => s.username === username && s.password === password
+      );
+
+      console.log('Found student:', student ? 'Yes' : 'No'); // Debug log
+      
+      if (student) {
+        const userData = {
+          id: student.id,
+          name: student.name,
+          username: student.username,
+          role: 'student',
+          branch: student.branch,
+          university: student.university,
+          classId: student.classId
+        };
+        
+        console.log('Login with user data:', userData); // Debug log
+        
+        // Show localStorage before login
+        console.log('localStorage before login:', JSON.parse(localStorage.getItem('user')));
+        
+        const success = await login(userData);
+        
+        // Show localStorage after login
+        try {
+          const savedData = localStorage.getItem('user');
+          console.log('localStorage after login:', savedData ? JSON.parse(savedData) : null);
+        } catch (error) {
+          console.error('Error parsing localStorage after login:', error);
+        }
+        
+        if (success) {
+          console.log('Login successful, navigating to dashboard'); // Debug log
+          // We'll let the useEffect in App.jsx handle the navigation
+        } else {
+          console.error('Login returned false'); // Debug log
+          setError('Login failed. Please try again.');
+        }
+      } else {
+        console.error('Student not found with provided credentials'); // Debug log
+        setError('Invalid username or password');
       }
-      // If successful, the AuthContext automatically handles the redirect.
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
+    } catch (error) {
+      console.error('Login error:', error);
       setError('An error occurred. Please try again.');
     }
   };
