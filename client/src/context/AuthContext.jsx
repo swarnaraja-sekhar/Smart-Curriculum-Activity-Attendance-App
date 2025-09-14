@@ -144,7 +144,15 @@ export function AuthProvider({ children }) {
     // We'll handle navigation in the component that calls logout instead
   };
   
-  const value = { user, login, logout, notification, setNotification };
+  // Expose setUser for direct updates (like password changes)
+  const value = { 
+    user, 
+    setUser, 
+    login, 
+    logout, 
+    notification, 
+    setNotification 
+  };
 
   return (
     <AuthContext.Provider value={value}>

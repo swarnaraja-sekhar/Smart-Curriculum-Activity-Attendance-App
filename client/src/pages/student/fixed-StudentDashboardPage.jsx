@@ -134,25 +134,38 @@ export default function StudentDashboardPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-8">
         
-        {/* --- Header --- */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Welcome back, {user.name}!
-          </h1>
-          <p className="text-lg text-gray-600 mt-1">
-            Here’s your plan for today. Let's make it a productive one.
-          </p>
+        {/* --- Header with Greeting and Date --- */}
+        <div className="mb-8 relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-6 sm:p-8 shadow-lg">
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl"></div>
+          <div className="absolute right-0 bottom-0 -mb-8 -mr-8 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
+          <div className="absolute left-0 top-0 -ml-8 -mt-8 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-blue-100 mb-1 font-medium">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  Welcome back, {user.name}!
+                </h1>
+                <p className="text-blue-100 max-w-lg">
+                  Here's your personalized dashboard. Track your attendance, view your schedule, and stay on top of your tasks.
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setShowQRScanner(true)}
+                className="mt-4 sm:mt-0 flex items-center space-x-2 bg-white text-blue-600 px-5 py-3 rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-sm font-medium self-start"
+              >
+                <QrCodeIcon className="w-5 h-5" />
+                <span>Scan Attendance QR</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* --- Scan Button and Modal --- */}
-        <button
-          onClick={() => setShowQRScanner(true)}
-          className="mb-8 flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-md"
-        >
-          <QrCodeIcon className="w-5 h-5" />
-          <span>Scan Attendance QR</span>
-        </button>
-
+        {/* QR Scanner and Result Notification */}
         {showQRScanner && (
           <QRScanner 
             onClose={() => setShowQRScanner(false)}
@@ -213,8 +226,8 @@ export default function StudentDashboardPage() {
                     x="50" y="50" 
                     dominantBaseline="middle" 
                     textAnchor="middle"
-                    className="text-2xl font-bold text-blue-600"
                     fill="#3B82F6"
+                    style={{ fontSize: "16px", fontWeight: "bold" }}
                   >
                     {attendancePercentage}%
                   </text>

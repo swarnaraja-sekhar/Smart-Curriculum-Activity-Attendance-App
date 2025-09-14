@@ -11,9 +11,10 @@ import {
   BellIcon,
   UserCircleIcon,
   ChevronRightIcon,
-  MapPinIcon,
+  LocationMarkerIcon,
   CheckCircleIcon,
-  BoltIcon
+  ExclamationIcon,
+  LightningBoltIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import DailyRoutine from '../../components/student/DailyRoutine';
@@ -49,33 +50,6 @@ const taskDatabase = [
 const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const today = new Date();
 const todayName = dayNames[today.getDay() === 0 ? 6 : today.getDay() - 1]; // Adjusting to have Monday as first day
-
-// Format time for visual display (e.g., "10:00 AM - 11:30 AM" -> "10:00 - 11:30")
-const formatTimeDisplay = (timeString) => {
-  return timeString
-    .replace(/(\d+:\d+) ([AP]M) - (\d+:\d+) ([AP]M)/, (_, start, ampm1, end, ampm2) => {
-      // If AM/PM are the same, only show it once at the end
-      if (ampm1 === ampm2) return `${start} - ${end} ${ampm1}`;
-      return `${start} ${ampm1} - ${end} ${ampm2}`;
-    });
-};
-
-const TimeSlot = ({ time, type, isActive }) => {
-  return (
-    <div className={`text-xs font-medium px-2 py-1 rounded-md ${
-      isActive 
-        ? 'bg-blue-100 text-blue-800' 
-        : type === 'free'
-          ? 'bg-emerald-50 text-emerald-700'
-          : 'bg-gray-100 text-gray-700'
-    }`}>
-      <div className="flex items-center">
-        <ClockIcon className="w-3 h-3 mr-1" />
-        <span>{formatTimeDisplay(time)}</span>
-      </div>
-    </div>
-  );
-};
 
 // --- THE RECOMMENDATION ENGINE LOGIC ---
 const generateRoutineForStudent = (student) => {
@@ -159,6 +133,33 @@ const generateRoutineForStudent = (student) => {
     }
     return period;
   });
+};
+
+// Format time for visual display (e.g., "10:00 AM - 11:30 AM" -> "10:00 - 11:30")
+const formatTimeDisplay = (timeString) => {
+  return timeString
+    .replace(/(\d+:\d+) ([AP]M) - (\d+:\d+) ([AP]M)/, (_, start, ampm1, end, ampm2) => {
+      // If AM/PM are the same, only show it once at the end
+      if (ampm1 === ampm2) return `${start} - ${end} ${ampm1}`;
+      return `${start} ${ampm1} - ${end} ${ampm2}`;
+    });
+};
+
+const TimeSlot = ({ time, type, isActive }) => {
+  return (
+    <div className={`text-xs font-medium px-2 py-1 rounded-md ${
+      isActive 
+        ? 'bg-blue-100 text-blue-800' 
+        : type === 'free'
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-gray-100 text-gray-700'
+    }`}>
+      <div className="flex items-center">
+        <ClockIcon className="w-3 h-3 mr-1" />
+        <span>{formatTimeDisplay(time)}</span>
+      </div>
+    </div>
+  );
 };
 
 export default function StudentTimetablePage() {
@@ -303,16 +304,16 @@ export default function StudentTimetablePage() {
           >
             Schedule View
           </button>
-              <button
-                onClick={() => setActiveView('daily')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeView === 'daily'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Daily Routine
-              </button>
+          <button
+            onClick={() => setActiveView('daily')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeView === 'daily'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            Daily Routine
+          </button>
         </div>
 
         {activeView === 'weekly' ? (
@@ -404,7 +405,7 @@ export default function StudentTimetablePage() {
                                         )}
                                         {item.location && (
                                           <div className="flex items-center text-sm text-gray-600">
-                                            <MapPinIcon className="w-4 h-4 mr-1 text-gray-500" />
+                                            <LocationMarkerIcon className="w-4 h-4 mr-1 text-gray-500" />
                                             <span>{item.location}</span>
                                           </div>
                                         )}
@@ -424,7 +425,7 @@ export default function StudentTimetablePage() {
                                             : 'bg-blue-100'
                                       }`}>
                                         {item.suggestedTask.priority === 'high' ? (
-                                          <BoltIcon className="w-6 h-6 text-red-700" />
+                                          <LightningBoltIcon className="w-6 h-6 text-red-700" />
                                         ) : item.suggestedTask.priority === 'medium' ? (
                                           <FlagIcon className="w-6 h-6 text-orange-700" />
                                         ) : (
@@ -562,7 +563,7 @@ export default function StudentTimetablePage() {
                   <div className="space-y-3">
                     <div className="flex items-center">
                       <div className="bg-red-100 p-2 rounded-lg">
-                        <BoltIcon className="w-5 h-5 text-red-700" />
+                        <LightningBoltIcon className="w-5 h-5 text-red-700" />
                       </div>
                       <div className="ml-3">
                         <p className="font-medium text-gray-900">High Priority</p>
@@ -676,4 +677,3 @@ export default function StudentTimetablePage() {
     </div>
   );
 }
-

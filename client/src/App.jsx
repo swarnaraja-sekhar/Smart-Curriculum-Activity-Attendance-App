@@ -23,6 +23,7 @@ import ClassReports from './pages/faculty/ClassReports';
 import TaskManager from './pages/faculty/TaskManager';
 import StudentList from './pages/faculty/StudentList';
 import FacultyAttendance from './pages/faculty/FacultyAttendance';
+import FacultyProfilePage from './pages/faculty/FacultyProfilePage';
 import Footer from './components/layout/Footer';
 
 // --- (Import your Admin pages here) ---
@@ -110,6 +111,10 @@ function App() {
         <Route
           path="/faculty-attendance"
           element={<ProtectedFacultyRoute><FacultyAttendance /></ProtectedFacultyRoute>} 
+        />
+        <Route
+          path="/faculty-profile"
+          element={<ProtectedFacultyRoute><FacultyProfilePage /></ProtectedFacultyRoute>} 
         />
         
         {/* === CATCH-ALL ROUTE === */}
