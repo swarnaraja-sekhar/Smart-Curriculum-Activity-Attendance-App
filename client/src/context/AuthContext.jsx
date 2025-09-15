@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import studentData from '../data/studentData.json';
-import facultyData from '../data/facultyData.json';
+
 // --- (Your mock studentData and facultyData stay the same, but with goals/interests) ---
+
 
 
 // --- NEW: WEEKLY STUDY PLAN ---
@@ -58,6 +58,49 @@ export function AuthProvider({ children }) {
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
+  const login = async (username, password, role) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/${role}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store user info and token
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+
+      // Redirect based on role
+      if (role === 'student') {
+        navigate('/student-dashboard');
+      } else if (role === 'faculty') {
+        navigate('/faculty-dashboard');
+      }
+
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        title: 'Login Failed',
+        message: error.message,
+      });
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
+  };
   // --- Live Scheduler for Notifications ---
   useEffect(() => {
     if (!user) return; // Don't run if logged out
@@ -117,33 +160,6 @@ export function AuthProvider({ children }) {
   }, [user, setNotification]);
 
 
-  const login = async (userData) => {
-    try {
-      console.log('AuthContext login called with:', userData);
-      console.log('localStorage before setting:', localStorage.getItem('user'));
-      
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      console.log('localStorage after setting:', localStorage.getItem('user'));
-      setUser(userData);
-      
-      // Verify user state was updated
-      console.log('User state after setting:', userData);
-      
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    setNotification({ message: "You have been logged out.", type: "info" });
-    // We'll handle navigation in the component that calls logout instead
-  };
-  
   // Expose setUser for direct updates (like password changes)
   const value = { 
     user, 

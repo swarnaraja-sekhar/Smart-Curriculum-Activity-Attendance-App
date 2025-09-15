@@ -1,83 +1,18 @@
 // /src/pages/public/StudentLoginPage.jsx
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import studentData from '../../data/studentData.json';
 
 export default function StudentLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login, notification } = useAuth();
 
-  // Log localStorage data when component mounts
-  useEffect(() => {
-    try {
-      const userData = localStorage.getItem('user');
-      console.log('Current localStorage user data:', userData ? JSON.parse(userData) : null);
-    } catch (error) {
-      console.error('Error parsing localStorage data:', error);
-    }
-  }, []);
-
-  const handleStudentLogin = async (e) => {
+  const handleStudentLogin = (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
-    
-    try {
-      console.log('Attempting login with:', username); // Debug log
-      
-      // Check credentials against studentData.json
-      const student = studentData.find(
-        (s) => s.username === username && s.password === password
-      );
-
-      console.log('Found student:', student ? 'Yes' : 'No'); // Debug log
-      
-      if (student) {
-        const userData = {
-          id: student.id,
-          name: student.name,
-          username: student.username,
-          role: 'student',
-          branch: student.branch,
-          university: student.university,
-          classId: student.classId
-        };
-        
-        console.log('Login with user data:', userData); // Debug log
-        
-        // Show localStorage before login
-        console.log('localStorage before login:', JSON.parse(localStorage.getItem('user')));
-        
-        const success = await login(userData);
-        
-        // Show localStorage after login
-        try {
-          const savedData = localStorage.getItem('user');
-          console.log('localStorage after login:', savedData ? JSON.parse(savedData) : null);
-        } catch (error) {
-          console.error('Error parsing localStorage after login:', error);
-        }
-        
-        if (success) {
-          console.log('Login successful, navigating to dashboard'); // Debug log
-          // We'll let the useEffect in App.jsx handle the navigation
-        } else {
-          console.error('Login returned false'); // Debug log
-          setError('Login failed. Please try again.');
-        }
-      } else {
-        console.error('Student not found with provided credentials'); // Debug log
-        setError('Invalid username or password');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('An error occurred. Please try again.');
-    }
+    login(username, password, 'student');
   };
 
   return (
@@ -107,8 +42,15 @@ export default function StudentLogin() {
           <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-teal-600 via-cyan-600 to-sky-600 mb-2">
             Student Portal
           </h2>
-          <p className="text-center text-gray-500 mb-8">Enter your credentials to access your account</p>
+          <p className="text-center text-gray-500 mb-8">Enter your credentials to access your dashboard</p>
           
+          {notification && notification.type === 'error' && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+              <strong className="font-bold">{notification.title}</strong>
+              <span className="block sm:inline"> {notification.message}</span>
+            </div>
+          )}
+
           <form onSubmit={handleStudentLogin} className="space-y-5">
             <div className="space-y-1">
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 ml-1">
@@ -178,16 +120,6 @@ export default function StudentLogin() {
                 </button>
               </div>
             </div>
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl border border-red-100 shadow-sm">
-                <p className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  {error}
-                </p>
-              </div>
-            )}
             <button 
               type="submit" 
               className="w-full py-4 mt-2 bg-gradient-to-r from-teal-600 via-cyan-600 to-sky-600 hover:from-teal-700 hover:via-cyan-700 hover:to-sky-700 text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] transition-all duration-300 transform hover:-translate-y-0.5"

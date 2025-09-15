@@ -2,53 +2,18 @@
 // /src/pages/public/FacultyLoginPage.jsx
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import facultyData from '../../data/facultyData.json';
 
 export default function FacultyLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login, notification } = useAuth();
 
-  const handleFacultyLogin = async (e) => {
+  const handleFacultyLogin = (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
-    
-    try {
-      // Check credentials against facultyData.json
-      const faculty = facultyData.find(
-        (f) => f.username === username && f.password === password
-      );
-
-      if (faculty) {
-        const success = await login({
-          id: faculty.id,
-          name: faculty.name,
-          username: faculty.username,
-          role: 'faculty',
-          department: faculty.department,
-          designation: faculty.designation,
-          specialization: faculty.specialization,
-          subjects: faculty.subjects,
-          classIds: faculty.classIds
-        });
-
-        if (success) {
-          navigate('/faculty-dashboard');
-        } else {
-          setError('Login failed. Please try again.');
-        }
-      } else {
-        setError('Invalid username or password');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('An error occurred. Please try again.');
-    }
+    login(username, password, 'faculty');
   };
 
   return (
@@ -79,6 +44,13 @@ export default function FacultyLogin() {
           </h2>
           <p className="text-center text-gray-500 mb-8">Enter your credentials to access your account</p>
           
+          {notification && notification.type === 'error' && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+              <strong className="font-bold">{notification.title}</strong>
+              <span className="block sm:inline"> {notification.message}</span>
+            </div>
+          )}
+
           <form onSubmit={handleFacultyLogin} className="space-y-5">
             <div className="space-y-1">
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 ml-1">
@@ -148,16 +120,6 @@ export default function FacultyLogin() {
                 </button>
               </div>
             </div>
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl border border-red-100 shadow-sm">
-                <p className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  {error}
-                </p>
-              </div>
-            )}
             <button 
               type="submit" 
               className="w-full py-4 mt-2 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-700 hover:via-purple-700 hover:to-fuchsia-700 text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)] transition-all duration-300 transform hover:-translate-y-0.5"
