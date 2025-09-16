@@ -1,5 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../api/axios'; // Import the new API client
+
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../api/axios';
 
 // --- (Your mock studentData and facultyData stay the same, but with goals/interests) ---
 
@@ -60,17 +65,15 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password, role) => {
     try {
-      const response = await fetch(`https://server-3y45.onrender.com/api/auth/${role}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+      // Use the apiClient instead of fetch
+      const response = await apiClient.post(`/auth/${role}/login`, {
+        username,
+        password,
       });
 
-      const data = await response.json();
+      const data = response.data; // With Axios, the data is in response.data
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(data.message || 'Login failed');
       }
 
@@ -87,10 +90,12 @@ export function AuthProvider({ children }) {
       }
 
     } catch (error) {
+      // Axios provides more detailed error info
+      const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred.';
       setNotification({
         type: 'error',
         title: 'Login Failed',
-        message: error.message,
+        message: errorMessage,
       });
     }
   };
