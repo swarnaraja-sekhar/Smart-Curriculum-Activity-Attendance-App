@@ -8,7 +8,8 @@ import {
   ExclamationCircleIcon, 
   ChartBarIcon,
   ArrowUpIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  XMarkIcon // Import XMarkIcon for the close button
 } from '@heroicons/react/24/solid';
 import { ClockIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import QRScanner from '../../components/common/QRScanner';
@@ -124,24 +125,34 @@ export default function StudentAttendance() {
   const overallIsDanger = overallPercent < 75;
   
   useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
+    // Data is now loaded, so we can stop the loading indicator.
+    // The timeout has been removed.
+    setLoading(false);
   }, []);
 
-  const handleScan = (result) => {
-    // Handle the QR code result here
-    console.log('QR Code scanned:', result);
+  const handleScan = async (result) => {
+    if (result) {
+      console.log('QR Code scanned:', result);
+      setShowScanner(false);
+      
+      // TODO: Add API call here to submit the attendance `result` to the backend.
+      // For now, we'll simulate a successful scan.
+      
+      setNotificationMessage(`Successfully marked attendance for ${result.text || 'current class'}`);
+      setShowNotification(true);
+      
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+    }
+  };
+
+  const handleError = (error) => {
+    console.error('QR Scan Error:', error);
     setShowScanner(false);
-    
-    // Show success notification
-    setNotificationMessage(`Successfully marked attendance for ${result || 'current class'}`);
+    setNotificationMessage('Failed to scan QR code. Please try again.');
     setShowNotification(true);
     
-    // Hide notification after 3 seconds
     setTimeout(() => {
       setShowNotification(false);
     }, 3000);
@@ -188,6 +199,51 @@ export default function StudentAttendance() {
             </button>
           </div>
         </div>
+
+        {/* --- QR Scanner Modal --- */}
+        {showScanner && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+            <div className="bg-gray-900 border-2 border-blue-500/50 rounded-3xl shadow-2xl w-full max-w-sm relative overflow-hidden">
+              {/* Close Button */}
+              <button
+                onClick={() => setShowScanner(false)}
+                className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors z-20"
+                aria-label="Close scanner"
+              >
+                <XMarkIcon className="w-6 h-6 text-white" />
+              </button>
+
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-center text-white mb-2">Scan QR Code</h3>
+                <p className="text-center text-gray-400 mb-6">Align the code within the frame to mark your attendance.</p>
+                
+                <div className="w-full aspect-square rounded-2xl overflow-hidden relative border-4 border-gray-700/80 bg-gray-800/50">
+                  {/* Corner Brackets */}
+                  <div className="absolute top-2 left-2 w-8 h-8 border-t-4 border-l-4 border-blue-400 rounded-tl-lg"></div>
+                  <div className="absolute top-2 right-2 w-8 h-8 border-t-4 border-r-4 border-blue-400 rounded-tr-lg"></div>
+                  <div className="absolute bottom-2 left-2 w-8 h-8 border-b-4 border-l-4 border-blue-400 rounded-bl-lg"></div>
+                  <div className="absolute bottom-2 right-2 w-8 h-8 border-b-4 border-r-4 border-blue-400 rounded-br-lg"></div>
+
+                  {/* Scanning Laser */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-blue-400 shadow-[0_0_10px_2px_#3b82f6] animate-scan"></div>
+
+                  <QRScanner
+                    onScan={handleScan}
+                    onError={handleError}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- Notification Popup --- */}
+        {showNotification && (
+          <div className="fixed bottom-5 right-5 bg-white shadow-lg rounded-lg p-4 flex items-center z-50 border-l-4 border-green-500">
+            <CheckBadgeIcon className="w-6 h-6 text-green-500 mr-3" />
+            <span className="text-gray-700">{notificationMessage}</span>
+          </div>
+        )}
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
