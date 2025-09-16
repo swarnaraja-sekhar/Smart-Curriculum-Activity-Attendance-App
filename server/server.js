@@ -56,7 +56,9 @@ const authRoutes = require('./routes/auth');
 
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/auth', authRoutes);
-
+app.get("/",(req,res)=>{
+  res.send("Backend is running");
+})
 // Error handler (should be last middleware)
 app.use(errorHandler);
 
