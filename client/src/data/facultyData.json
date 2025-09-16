@@ -5,6 +5,7 @@
     "name": "Dr. Anitha Kumar",
     "password": "f210001anitha",
     "role": "faculty",
+    "isHOD": true,
     "department": "Computer Science & Engineering",
     "university": "Smart India University",
     "designation": "Associate Professor",

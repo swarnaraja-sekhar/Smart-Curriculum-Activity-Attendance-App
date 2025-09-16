@@ -73,6 +73,7 @@ const seedDatabase = async () => {
         college: college._id,
         branch: f.department, // Map department to branch
         classIds: f.classIds, // Assign the array directly
+        isHOD: f.isHOD || false, // Add isHOD field
       });
       await faculty.save();
     }

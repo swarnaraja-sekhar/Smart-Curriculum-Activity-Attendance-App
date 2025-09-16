@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password, role) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/${role}/login`, {
+      const response = await fetch(`https://server-3y45.onrender.com/api/auth/${role}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

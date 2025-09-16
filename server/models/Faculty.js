@@ -7,7 +7,11 @@ const facultySchema = new mongoose.Schema({
   branch: { type: String, required: true },
   classIds: [{ type: String, required: true }], 
   college: { type: mongoose.Schema.Types.ObjectId, ref: 'College', required: true },
-  role: { type: String, default: 'faculty' }
+  role: { type: String, default: 'faculty' },
+  isHOD: { type: Boolean, default: false }, // Head of Department flag
+
+  // Keep track of tasks created by this faculty member
+  tasksCreated: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }]
 });
 
 module.exports = mongoose.model('Faculty', facultySchema);

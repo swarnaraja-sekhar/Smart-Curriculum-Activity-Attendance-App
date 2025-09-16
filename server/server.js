@@ -31,7 +31,12 @@ wss.on('connection', (ws) => {
   ws.on('error', console.error);
 });
 
-app.use(cors());
+app.use(cors(
+  {
+    origin:"https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app/",
+    credentials:true
+  }
+));
 app.use(express.json());
 app.use(logger);
 
