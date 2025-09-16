@@ -64,8 +64,8 @@ router.post('/faculty/login', async (req, res) => {
     console.log('Received password:', password ? '********' : '(empty)');
   
     try {
-      // Find faculty by username
-      const faculty = await Faculty.findOne({ username });
+      // Find faculty by username and explicitly include classIds
+      const faculty = await Faculty.findOne({ username }).select('+password +classIds');
       if (!faculty) {
         console.log('DEBUG: Faculty not found in database.');
         return res.status(400).json({ message: 'Invalid credentials' });

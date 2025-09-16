@@ -34,8 +34,37 @@ const generateMockAttendance = (classIds) => {
 const ClassReports = () => {
   const { user } = useAuth();
   const [selectedClass, setSelectedClass] = useState(user?.classIds?.[0] || '');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const attendanceData = useMemo(() => generateMockAttendance(user.classIds || []), [user.classIds]);
+  // This effect handles the case where the user object loads after the initial render.
+  // It ensures the first class is selected once available.
+  React.useEffect(() => {
+    if (user?.classIds?.length && !selectedClass) {
+      setSelectedClass(user.classIds[0]);
+    }
+  }, [user, selectedClass]);
+
+  const attendanceData = useMemo(() => generateMockAttendance(user?.classIds || []), [user?.classIds]);
+
+  // Loading and empty state guard
+  if (!user || !user.classIds || user.classIds.length === 0) {
+    return (
+      <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 128px)'}}>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          { !user 
+            ? <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+            : <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
+          }
+          <h3 className="mt-2 text-lg font-medium text-gray-900">
+            { !user ? 'Loading User Data...' : 'No Classes Assigned' }
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            { !user ? 'Please wait while we fetch your details.' : 'There are no classes assigned to your profile.' }
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const studentsForSelectedClass = attendanceData[selectedClass] || [];
 
@@ -83,26 +112,28 @@ const ClassReports = () => {
     ? studentsForSelectedClass.reduce((sum, s) => sum + s.attendancePercentage, 0) / totalStudents 
     : 0;
   const highAttendanceCount = studentsForSelectedClass.filter(s => s.attendancePercentage > 90).length;
-  const mediumAttendanceCount = studentsForSelectedClass.filter(s => s.attendancePercentage >= 80 && s.attendancePercentage <= 90).length;
   const lowAttendanceCount = studentsForSelectedClass.filter(s => s.attendancePercentage < 70).length;
 
   // Search functionality
-  const [searchTerm, setSearchTerm] = useState('');
   const filteredStudents = studentsForSelectedClass.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     student.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  /* This check is now handled by the guard at the top */
+  /*
   if (!user || !user.classIds) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="flex flex-col items-center p-8 bg-white rounded-lg shadow-md">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-lg font-medium text-gray-700">Loading class data...</p>
+          <p className="text-lg font-semibold text-gray-700">Loading user data...</p>
+          <p className="text-sm text-gray-500">Please wait a moment.</p>
         </div>
       </div>
     );
   }
+  */
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">

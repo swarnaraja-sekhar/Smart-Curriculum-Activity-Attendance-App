@@ -17,6 +17,7 @@ import StudentAttendancePage from './pages/student/StudentAttendancePage';
 import StudentTimetable from './pages/student/StudentTimetable';
 import StudentProfilePage from './pages/student/StudentProfilePage';
 import StudentTaskPage from './pages/student/StudentTaskPage';
+import StudentQRScanner from './pages/student/StudentQRScanner';
 // --- Import Faculty Pages ---
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import ClassReports from './pages/faculty/ClassReports';
@@ -87,6 +88,10 @@ function App() {
         <Route 
           path="/student-profile"
           element={<ProtectedStudentRoute><StudentProfilePage /></ProtectedStudentRoute>} 
+        />
+        <Route
+          path="/student/scan-attendance"
+          element={<ProtectedStudentRoute><StudentQRScanner /></ProtectedStudentRoute>}
         />
         {/* <Route path="/student-timetable" element={user && user.role === 'student' ? <StudentTimetable /> : <Navigate to="/student-login" />} /> */}
 

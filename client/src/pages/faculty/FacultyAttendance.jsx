@@ -11,14 +11,25 @@ import {
   XCircleIcon, 
   ArrowPathIcon,
   PlayIcon,
-  StopIcon
+  StopIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 
 const FacultyAttendance = () => {
   const { user } = useAuth();
+  const classIds = useMemo(() => {
+    if (!user) return [];
+    if (user.classIds) return user.classIds; // Use if already an array
+    if (typeof user.classId === 'string') return user.classId.split(',').map(s => s.trim()); // Split string into array
+    return [];
+  }, [user]);
+
+  useEffect(() => {
+    console.log('Faculty user object from context in FacultyAttendance:', user);
+  }, [user]);
   
   // State management
-  const [selectedClass, setSelectedClass] = useState(user?.classIds?.[0] || '');
+  const [selectedClass, setSelectedClass] = useState(classIds?.[0] || '');
   const [sessionActive, setSessionActive] = useState(false);
   const [attendance, setAttendance] = useState({});
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
@@ -36,6 +47,13 @@ const FacultyAttendance = () => {
       hour12: true 
     })
   );
+
+  // This effect handles the case where the user object loads after the initial render.
+  React.useEffect(() => {
+    if (classIds?.length && !selectedClass) {
+      setSelectedClass(classIds[0]);
+    }
+  }, [classIds, selectedClass]);
 
   // Memoized list of students for the selected class
   const studentsInClass = useMemo(() => {
@@ -75,39 +93,61 @@ const FacultyAttendance = () => {
     }
   }, [user, selectedClass]);
 
-  // Effect for handling the attendance session
+  // Effect for handling the attendance session and WebSocket connection
   useEffect(() => {
     let qrInterval;
     let timerInterval;
-    let simulationInterval;
+    let ws;
 
     if (sessionActive) {
+      // --- WebSocket Connection ---
+      // Connect to the WebSocket server when the session starts
+      ws = new WebSocket('ws://localhost:5000');
+
+      ws.onopen = () => {
+        console.log('WebSocket connection established.');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'ATTENDANCE_UPDATE') {
+            const { student, status, time } = message.data;
+            console.log('Attendance Update Received:', student);
+            // Update the attendance state with real data from the backend
+            setAttendance(prev => ({
+              ...prev,
+              [student.id]: { status, time }
+            }));
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket connection closed.');
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      // --- QR Generation ---
       generateQR();
       qrInterval = setInterval(generateQR, 10000);
       timerInterval = setInterval(() => setTimer(t => (t > 1 ? t - 1 : 10)), 1000);
-
-      // --- ATTENDANCE SIMULATION ---
-      // In a real app, this would be a WebSocket listener.
-      // Here, we simulate students getting marked as present.
-      simulationInterval = setInterval(() => {
-        const unmarkedStudents = studentsInClass.filter(s => !attendance[s.id]);
-        if (unmarkedStudents.length > 0) {
-          const randomStudent = unmarkedStudents[Math.floor(Math.random() * unmarkedStudents.length)];
-          setAttendance(prev => ({
-            ...prev,
-            [randomStudent.id]: { status: 'Present', time: new Date().toLocaleTimeString() }
-          }));
-        }
-      }, 3000); // Simulate a scan every 3 seconds
-
     }
 
     return () => {
+      // Cleanup intervals and close WebSocket connection
       clearInterval(qrInterval);
       clearInterval(timerInterval);
-      clearInterval(simulationInterval);
+      if (ws) {
+        ws.close();
+      }
     };
-  }, [sessionActive, generateQR, studentsInClass, attendance]);
+  }, [sessionActive, generateQR]);
 
   const handleStartSession = () => {
     setAttendance({}); // Reset attendance for new session
@@ -129,16 +169,26 @@ const FacultyAttendance = () => {
     return { total, present, absent, presentPercentage };
   }, [studentsInClass, attendance]);
 
-  if (!user || !user.classIds) {
+  // Loading and empty state guard
+  if (!user || !classIds || classIds.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center p-8 bg-white rounded-lg shadow-md">
-          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-lg font-medium text-gray-700">Loading faculty data...</p>
+      <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 128px)'}}>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          { !user 
+            ? <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+            : <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
+          }
+          <h3 className="mt-2 text-lg font-medium text-gray-900">
+            { !user ? 'Loading User Data...' : 'No Classes Assigned' }
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            { !user ? 'Please wait while we fetch your details.' : 'There are no classes assigned to your profile.' }
+          </p>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">

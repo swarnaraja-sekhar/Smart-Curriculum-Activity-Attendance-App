@@ -67,11 +67,12 @@ const seedDatabase = async () => {
     for (const f of facultyData) {
       const hashedPassword = await bcrypt.hash(f.password, 10);
       const faculty = new Faculty({
-        ...f,
+        name: f.name,
+        username: f.username,
         password: hashedPassword,
         college: college._id,
         branch: f.department, // Map department to branch
-        classId: f.classIds.join(', '), // Join classIds array
+        classIds: f.classIds, // Assign the array directly
       });
       await faculty.save();
     }
