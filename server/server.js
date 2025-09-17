@@ -40,18 +40,34 @@ const allowedOrigins = [
   "http://localhost:5001",
   "https://smart-curriculum-activity-attendance-app.vercel.app",
   "https://smart-curriculum-activity-attendanc-rosy.vercel.app",
-  "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app"
+  "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app",
+  "https://smart-curriculum-activity-attendance-app.onrender.com"
 ];
 
+// More robust CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is allowed
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
     }
+    
+    // Check if origin is a subdomain of allowed origins
+    for (const allowedOrigin of allowedOrigins) {
+      if (origin.startsWith(allowedOrigin.replace(/^https?:\/\//, ''))) {
+        return callback(null, true);
+      }
+    }
+    
+    console.log(`CORS blocked request from origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 app.use(logger);
