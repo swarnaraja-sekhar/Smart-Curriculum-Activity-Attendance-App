@@ -91,9 +91,12 @@ mongoose.connect(config.mongoUri, {
 
 const attendanceRoutes = require('./routes/attendance');
 const authRoutes = require('./routes/auth');
+const qrRoutes = require('./routes/qr'); // Import the new QR routes
 
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/qr', qrRoutes); // Use the new QR routes
+
 app.get("/",(req,res)=>{
   res.send("Backend is running");
 })

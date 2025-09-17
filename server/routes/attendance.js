@@ -1,78 +1,76 @@
 const express = require('express');
 const router = express.Router();
 const { OPEN } = require('ws');
-const auth = require('../middleware/auth'); // Import the auth middleware
+const auth = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
+const QrSession = require('../models/QrSession'); // Import the new session model
 
 // @route   POST /api/attendance/scan
-// @desc    Record attendance from a QR scan and notify faculty via WebSocket.
-// @access  Private (for students)
+// @desc    Record attendance from a QR scan
+// @access  Private (Student)
 router.post('/scan', auth, async (req, res) => {
-  // Get the WebSocket server instance from the app's request context
-  const { wss } = req.app.get('wss');
-  
-  // Get studentId from the authenticated user's token (provided by auth middleware)
-  const studentId = req.user.id; 
-  const { qrData } = req.body;
+  // Ensure the user is a student
+  if (req.user.role !== 'student') {
+    return res.status(403).json({ message: 'Access denied. Only students can scan for attendance.' });
+  }
 
-  // --- 1. Input Validation ---
-  if (!qrData) {
-    return res.status(400).json({ message: 'Missing required QR data.' });
+  const { wss } = req.app.get('wss');
+  const studentId = req.user.id;
+  const { sessionToken, classId, facultyId } = req.body.qrData;
+
+  if (!sessionToken || !classId || !facultyId) {
+    return res.status(400).json({ message: 'Invalid QR code data.' });
   }
 
   try {
-    // --- 2. QR Code Expiry Check ---
-    if (Date.now() > qrData.expiryTime) {
-      return res.status(400).json({ message: 'QR Code has expired. Please scan the new one.' });
+    // 1. Validate the session token
+    const session = await QrSession.findOne({ sessionToken });
+    if (!session) {
+      return res.status(404).json({ message: 'Attendance session not found or has expired.' });
     }
 
-    // --- 3. Prevent Duplicate Attendance ---
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Optional: Check if session is expired (though MongoDB TTL should handle it)
+    if (new Date() > session.expiresAt) {
+      return res.status(400).json({ message: 'This attendance session has expired.' });
+    }
 
-    const existingAttendance = await Attendance.findOne({
-      student: studentId,
-      classId: qrData.classId,
-      date: { $gte: today },
-    });
-
+    // 2. Check for duplicate attendance in this session
+    const existingAttendance = await Attendance.findOne({ studentId, sessionToken });
     if (existingAttendance) {
-      return res.status(409).json({ message: 'Attendance already marked for this class today.' });
+      return res.status(409).json({ message: 'You have already marked attendance for this session.' });
     }
 
-    // --- 4. Save New Attendance Record to Database ---
+    // 3. Save the new attendance record
     const newAttendance = new Attendance({
-      student: studentId,
-      classId: qrData.classId,
-      date: new Date(),
-      status: 'present',
-      markedBy: qrData.facultyId, // The faculty who started the session
+      classId,
+      facultyId,
+      studentId,
+      sessionToken,
+      status: 'Present',
     });
     await newAttendance.save();
 
-    // --- 5. Prepare WebSocket Payload ---
+    // 4. Prepare and send WebSocket payload
     const student = await Student.findById(studentId).select('name username');
     if (!student) {
-      // This case is unlikely if the token is valid, but good for safety
-      return res.status(404).json({ message: 'Student not found.' });
+      return res.status(404).json({ message: 'Student record not found.' });
     }
 
     const payload = JSON.stringify({
       type: 'ATTENDANCE_UPDATE',
       data: {
         student: {
-          _id: student._id,
           id: student._id.toString(),
           name: student.name,
           username: student.username,
         },
-        status: 'present',
-        time: newAttendance.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        status: 'Present',
+        time: newAttendance.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       },
     });
 
-    // --- 6. Broadcast to All Connected Clients ---
+    // Broadcast to all clients (can be refined to target specific faculty)
     wss.clients.forEach(client => {
       if (client.readyState === OPEN) {
         client.send(payload);
@@ -82,8 +80,12 @@ router.post('/scan', auth, async (req, res) => {
     res.status(201).json({ message: 'Attendance marked successfully!' });
 
   } catch (error) {
-    console.error('Scan Error:', error);
-    res.status(500).send('Server Error');
+    console.error('Error in /scan endpoint:', error);
+    // Handle specific error for duplicate key
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'Attendance already marked for this session.' });
+    }
+    res.status(500).json({ message: 'Server error while marking attendance.' });
   }
 });
 
