@@ -32,7 +32,7 @@ wss.on('connection', (ws) => {
 });
 
 app.use(cors({
-  origin:  [ "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app"],
+  origin:  [ "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app","http://localhost:5173","https://server-3y45.onrender.com","http://localhost:5001"],
   method:["GET,POST,PUT,DELETE"],
   credentials: true
 }));
