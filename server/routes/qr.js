@@ -37,8 +37,13 @@ router.post('/start-session', auth, async (req, res) => {
     });
     await newSession.save();
 
-    // 3. Find all students in the specified class
-    const students = await Student.find({ class: classId }).select('_id');
+    // 3. Find all students in the specified class (handles both old and new schema)
+    const students = await Student.find({
+      $or: [
+        { class: classId }, // Handles new schema with 'class' as ObjectId
+        { classId: classId }  // Handles old schema with 'classId' as String
+      ]
+    }).select('_id');
     console.log(`Found ${students.length} students for classId: ${classId}`); // Diagnostic log
 
     if (!students || students.length === 0) {
