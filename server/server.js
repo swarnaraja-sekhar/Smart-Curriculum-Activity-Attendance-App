@@ -12,7 +12,11 @@ const app = express();
 const server = http.createServer(app); // Create HTTP server from Express app
 
 // Create WebSocket Server
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ 
+  server,
+  // Add this to handle WebSocket connections behind proxies like Render uses
+  path: '/ws'
+});
 
 // Make wss available to routes
 app.set('wss', { wss });
@@ -33,7 +37,10 @@ wss.on('connection', (ws) => {
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:5001"
+  "http://localhost:5001",
+  "https://smart-curriculum-activity-attendance-app.vercel.app",
+  "https://smart-curriculum-activity-attendanc-rosy.vercel.app",
+  "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app"
 ];
 
 app.use(cors({
@@ -56,8 +63,14 @@ mongoose.connect(config.mongoUri, {
 }).then(() => {
   console.log('Connected to MongoDB');
 }).catch((err) => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1); // Exit if DB connection fails
+  console.error('MongoDB connection error:', err.message);
+  console.error('Full error details:', err);
+  // Don't exit immediately in production to allow troubleshooting
+  if (process.env.NODE_ENV === 'production') {
+    console.error('MongoDB connection failed in production, but keeping server running for debugging');
+  } else {
+    process.exit(1); // Exit only in development
+  }
 });
 
 const attendanceRoutes = require('./routes/attendance');
@@ -71,7 +84,10 @@ app.get("/",(req,res)=>{
 // Error handler (should be last middleware)
 app.use(errorHandler);
 
-server.listen(config.port, () => console.log(`Server running on http://localhost:${config.port}`));
+server.listen(config.port, () => {
+  console.log(`Server running on port ${config.port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
 
 // Export wss to be used in other parts of the app, like routes
 module.exports = { wss };
