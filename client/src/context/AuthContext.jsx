@@ -2,10 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/axios'; // Import the new API client
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/axios';
-
 // --- (Your mock studentData and facultyData stay the same, but with goals/interests) ---
 
 
