@@ -1,6 +1,4 @@
-// /src/pages/student/StudentAttendance.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   CheckBadgeIcon, 
   QrCodeIcon, 
@@ -9,20 +7,12 @@ import {
   ChartBarIcon,
   ArrowUpIcon,
   BookOpenIcon,
-  XMarkIcon // Import XMarkIcon for the close button
+  XMarkIcon
 } from '@heroicons/react/24/solid';
 import { ClockIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import QRScanner from '../../components/common/QRScanner';
-
-// --- MOCK DATA FOR PROTOTYPE ---
-// This data array lists the student's attendance per subject.
-const attendanceData = [
-  { code: "CS301", name: "Data Structures & Algorithms", total: 30, attended: 28 },
-  { code: "CS302", name: "Database Management Systems", total: 28, attended: 27 },
-  { code: "CS303", name: "Operating Systems Lab", total: 25, attended: 20 }, // This one is 80%
-  { code: "HS401", name: "Professional Ethics", total: 15, attended: 15 },
-  { code: "MA205", name: "Statistics & Probability", total: 22, attended: 16 }, // This one is < 75%
-];
+import axios from '../../api/axios';
+import { AuthContext } from '../../context/AuthContext';
 
 // --- Helper component for the progress bars ---
 const SubjectAttendanceCard = ({ subject }) => {
@@ -112,38 +102,70 @@ const SubjectAttendanceCard = ({ subject }) => {
 
 
 export default function StudentAttendance() {
+  const { user } = useContext(AuthContext);
+  const [attendanceData, setAttendanceData] = useState([]);
   const [showScanner, setShowScanner] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
-  const [currentMonth, setCurrentMonth] = useState('September');
+  const [currentMonth, setCurrentMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
   
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      if (!user?._id) return;
+      try {
+        setLoading(true);
+        // The backend route for this needs to be created.
+        // It should return aggregated attendance data for the student.
+        const response = await axios.get(`/attendance/student/${user._id}`);
+        setAttendanceData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch attendance data:", error);
+        setNotificationMessage("Could not load attendance data.");
+        setShowNotification(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+  }, [user]);
+
   // Calculate overall attendance stats for the summary card
   const totalAttended = attendanceData.reduce((acc, subject) => acc + subject.attended, 0);
   const totalClasses = attendanceData.reduce((acc, subject) => acc + subject.total, 0);
-  const overallPercent = Math.round((totalAttended / totalClasses) * 100);
+  const overallPercent = totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 0;
   const overallIsDanger = overallPercent < 75;
-  
-  useEffect(() => {
-    // Data is now loaded, so we can stop the loading indicator.
-    // The timeout has been removed.
-    setLoading(false);
-  }, []);
 
   const handleScan = async (result) => {
     if (result) {
-      console.log('QR Code scanned:', result);
       setShowScanner(false);
-      
-      // TODO: Add API call here to submit the attendance `result` to the backend.
-      // For now, we'll simulate a successful scan.
-      
-      setNotificationMessage(`Successfully marked attendance for ${result.text || 'current class'}`);
-      setShowNotification(true);
-      
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 3000);
+      try {
+        // The QR code now ONLY contains the sessionToken
+        const sessionToken = result.text;
+        
+        const response = await axios.post('/attendance/scan', {
+          sessionToken,
+        });
+
+        setNotificationMessage(response.data.message || 'Attendance marked successfully!');
+        setShowNotification(true);
+
+        // Refetch attendance to update the UI with the new stats
+        const updatedAttendance = await axios.get(`/attendance/student/${user._id}`);
+        setAttendanceData(updatedAttendance.data);
+
+      } catch (error) {
+        console.error('Error submitting attendance:', error);
+        const errorMessage = error.response?.data?.message || 'Failed to mark attendance. Invalid QR code or session expired.';
+        setNotificationMessage(errorMessage);
+        setShowNotification(true);
+      } finally {
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+          setShowNotification(false);
+        }, 5000);
+      }
     }
   };
 
