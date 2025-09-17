@@ -19,7 +19,7 @@ const studentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true }, // Store hashed password
   branch: { type: String, required: true },
-  classId: { type: String, required: true },
+  class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
   college: { type: mongoose.Schema.Types.ObjectId, ref: 'College', required: true },
   role: { type: String, default: 'student' },
   
