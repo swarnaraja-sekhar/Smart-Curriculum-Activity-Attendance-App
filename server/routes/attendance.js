@@ -1,20 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const { OPEN } = require('ws');
+const auth = require('../middleware/auth'); // Import the auth middleware
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 
 // @route   POST /api/attendance/scan
 // @desc    Record attendance from a QR scan and notify faculty via WebSocket.
-// @access  Private (for students, but unprotected for this demo)
-router.post('/scan', async (req, res) => {
+// @access  Private (for students)
+router.post('/scan', auth, async (req, res) => {
   // Get the WebSocket server instance from the app's request context
   const { wss } = req.app.get('wss');
-  const { qrData, studentId } = req.body;
+  
+  // Get studentId from the authenticated user's token (provided by auth middleware)
+  const studentId = req.user.id; 
+  const { qrData } = req.body;
 
   // --- 1. Input Validation ---
-  if (!qrData || !studentId) {
-    return res.status(400).json({ message: 'Missing required QR data or student ID.' });
+  if (!qrData) {
+    return res.status(400).json({ message: 'Missing required QR data.' });
   }
 
   try {
@@ -50,6 +54,7 @@ router.post('/scan', async (req, res) => {
     // --- 5. Prepare WebSocket Payload ---
     const student = await Student.findById(studentId).select('name username');
     if (!student) {
+      // This case is unlikely if the token is valid, but good for safety
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -63,12 +68,11 @@ router.post('/scan', async (req, res) => {
           username: student.username,
         },
         status: 'present',
-        time: newAttendance.date.toLocaleTimeString(),
+        time: newAttendance.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       },
     });
 
     // --- 6. Broadcast to All Connected Clients ---
-    // In a real-world app, you would target only the specific faculty member.
     wss.clients.forEach(client => {
       if (client.readyState === OPEN) {
         client.send(payload);

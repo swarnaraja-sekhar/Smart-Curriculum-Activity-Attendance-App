@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   AcademicCapIcon, 
@@ -21,6 +21,48 @@ const FacultyDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [liveAttendance, setLiveAttendance] = useState([]);
+
+  useEffect(() => {
+    // Construct the WebSocket URL
+    // Use wss:// for secure connections (like on Render), ws:// for local
+    const wsUrl = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
+    
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket connection established for faculty dashboard.');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+      
+        if (message.type === 'ATTENDANCE_UPDATE') {
+          console.log('Received attendance update:', message.data);
+          // Add the new student to the top of the list
+          setLiveAttendance(prev => [message.data, ...prev]);
+        }
+      } catch (e) {
+        console.error("Failed to parse WebSocket message:", event.data);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed.');
+      // Optional: Implement reconnection logic here
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    // Cleanup on component unmount
+    return () => {
+      ws.close();
+    };
+  }, []); // Empty dependency array ensures this runs only once
+
 
   // Quick Stats Cards Data
   const stats = [
@@ -58,6 +100,15 @@ const FacultyDashboard = () => {
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
       change: "+3% this month",
+      trend: "up"
+    },
+    {
+      title: "Live Attendance",
+      value: liveAttendance.length,
+      icon: ChartBarIcon,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+      change: "Updating in real-time...",
       trend: "up"
     }
   ];

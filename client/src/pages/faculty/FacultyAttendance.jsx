@@ -101,11 +101,13 @@ const FacultyAttendance = () => {
 
     if (sessionActive) {
       // --- WebSocket Connection ---
-      // Connect to the WebSocket server when the session starts
-      ws = new WebSocket('ws://localhost:5000');
+      // Use the VITE_API_URL, replacing http with ws (or https with wss)
+      const wsUrl = (import.meta.env.VITE_API_URL || 'ws://localhost:5001/api').replace(/^http/, 'ws');
+      
+      ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('WebSocket connection established.');
+        console.log('WebSocket connection established for live attendance.');
       };
 
       ws.onmessage = (event) => {
@@ -113,8 +115,9 @@ const FacultyAttendance = () => {
           const message = JSON.parse(event.data);
           if (message.type === 'ATTENDANCE_UPDATE') {
             const { student, status, time } = message.data;
-            console.log('Attendance Update Received:', student);
-            // Update the attendance state with real data from the backend
+            console.log('Real-time attendance update received for:', student.name);
+            
+            // Update the attendance state, which will trigger a re-render of the student list
             setAttendance(prev => ({
               ...prev,
               [student.id]: { status, time }
@@ -134,13 +137,13 @@ const FacultyAttendance = () => {
       };
 
       // --- QR Generation ---
-      generateQR();
-      qrInterval = setInterval(generateQR, 10000);
+      generateQR(); // Generate immediately
+      qrInterval = setInterval(generateQR, 10000); // Then refresh every 10 seconds
       timerInterval = setInterval(() => setTimer(t => (t > 1 ? t - 1 : 10)), 1000);
     }
 
     return () => {
-      // Cleanup intervals and close WebSocket connection
+      // Cleanup function to run when the session ends or component unmounts
       clearInterval(qrInterval);
       clearInterval(timerInterval);
       if (ws) {
