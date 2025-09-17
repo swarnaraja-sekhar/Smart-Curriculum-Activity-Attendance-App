@@ -1,12 +1,17 @@
 const mongoose = require("mongoose");
 
 const qrSessionSchema = new mongoose.Schema({
-  classId: { 
+  class: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Class',
     required: true 
   },
-  facultyId: { 
+  subject: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subject',
+    required: true
+  },
+  faculty: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Faculty',
     required: true 
