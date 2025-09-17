@@ -1,0 +1,11 @@
+{
+  "name": "smart-curriculum-app-root",
+  "version": "1.0.0",
+  "description": "Root package for the Smart Curriculum Activity Attendance App",
+  "scripts": {
+    "start": "cd server && npm install && npm start"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
