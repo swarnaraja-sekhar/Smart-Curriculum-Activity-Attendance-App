@@ -31,9 +31,19 @@ wss.on('connection', (ws) => {
   ws.on('error', console.error);
 });
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5001"
+];
+
 app.use(cors({
-  origin:  [ "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app","http://localhost:5173","https://server-3y45.onrender.com","http://localhost:5001"],
-  method:["GET,POST,PUT,DELETE"],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());

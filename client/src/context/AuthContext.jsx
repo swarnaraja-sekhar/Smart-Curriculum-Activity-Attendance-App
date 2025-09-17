@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
   const login = async (username, password, role) => {
     try {
       // Use the apiClient instead of fetch
-      const response = await apiClient.post(`/auth/${role}/login`, {
+      const response = await apiClient.post(`auth/${role}/login`, {
         username,
         password,
       });
