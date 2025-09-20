@@ -25,6 +25,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeItem, setActiveItem] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,6 +46,10 @@ export default function Navbar() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleNavHover = (item) => {
+    setActiveItem(item);
   };
 
   const renderLinks = () => {
@@ -69,6 +74,19 @@ export default function Navbar() {
             </NavLink>
             
             <NavLink 
+              to="/student-curriculum" 
+              className={({ isActive }) => 
+                `flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
+                  isActive 
+                    ? 'bg-gradient-to-r from-blue-500/10 to-cyan-500/10 text-blue-600 font-medium' 
+                    : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                }`
+              }
+            >
+              <CalendarIcon className="w-5 h-5 mr-2" />
+              <span>Curriculum</span>
+            </NavLink>
+            <NavLink 
               to="/student-attendance" 
               className={({ isActive }) => 
                 `flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
@@ -81,6 +99,7 @@ export default function Navbar() {
               <CalendarIcon className="w-5 h-5 mr-2" />
               <span>My Attendance</span>
             </NavLink>
+            
             
             <NavLink 
               to="/student-timetable" 
@@ -99,15 +118,8 @@ export default function Navbar() {
           
           {/* Desktop Right Side */}
           <div className="hidden lg:flex items-center space-x-2">
-            {/* QR Code Scanner Button */}
-            <Link
-              to="/scan-attendance"
-              className="flex items-center space-x-2 text-gray-700 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 px-4 py-2.5 rounded-lg transition-all duration-200 border border-blue-100"
-              title="Scan QR for Attendance"
-            >
-              <QrCodeIcon className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium">Scan QR</span>
-            </Link>
+           
+          
 
             {/* Profile Link */}
             <div className="relative group">

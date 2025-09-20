@@ -19,6 +19,7 @@ import { weeklyStudyPlan, taskDatabase } from '../../context/AuthContext'; // Im
 import timetableData from '../../data/timetable.json';
 import QRScanner from '../../components/common/QRScanner';
 
+
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const todayName = dayNames[new Date().getDay()];
 

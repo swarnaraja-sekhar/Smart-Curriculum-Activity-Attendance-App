@@ -10,7 +10,7 @@ import GlobalNotification from './components/layout/GlobalNotification';
 import HomePage from './pages/public/HomePage';
 import StudentLogin from './pages/public/StudentLogin';
 import FacultyLogin from './pages/public/FacultyLogin';
-
+import Curriculum from './components/student/Curriculum';
 // --- Import Student Pages ---
 import StudentDashboardPage from './pages/student/StudentDashboardPage';
 import StudentAttendancePage from './pages/student/StudentAttendancePage';
@@ -93,6 +93,7 @@ function App() {
           path="/student/scan-attendance"
           element={<ProtectedStudentRoute><StudentQRScanner /></ProtectedStudentRoute>}
         />
+        <Route path="/student-curriculum" element={<ProtectedStudentRoute><Curriculum /></ProtectedStudentRoute>} />
         {/* <Route path="/student-timetable" element={user && user.role === 'student' ? <StudentTimetable /> : <Navigate to="/student-login" />} /> */}
 
         

@@ -51,7 +51,7 @@ export const taskDatabase = [
 
 import timetableData from '../data/timetable.json';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   // ... (The rest of your AuthContext code (useState, useEffect, login, logout) remains exactly the same)

@@ -1,0 +1,57 @@
+{
+  "year-1": {
+    "sem-1": [
+      { "id": "SUB101", "name": "Engineering Mathematics I", "credits": 4 },
+      { "id": "SUB102", "name": "Engineering Physics", "credits": 3 },
+      { "id": "SUB103", "name": "Basic Electrical Engineering", "credits": 3 },
+      { "id": "SUB104", "name": "Programming for Problem Solving", "credits": 3 }
+    ],
+    "sem-2": [
+      { "id": "SUB105", "name": "Engineering Mathematics II", "credits": 4 },
+      { "id": "SUB106", "name": "Engineering Chemistry", "credits": 3 },
+      { "id": "SUB107", "name": "Data Structures & Algorithms", "credits": 4 },
+      { "id": "SUB108", "name": "Digital Logic Design", "credits": 3 }
+    ]
+  },
+  "year-2": {
+    "sem-1": [
+      { "id": "SUB201", "name": "Discrete Mathematics", "credits": 4 },
+      { "id": "SUB202", "name": "Object Oriented Programming", "credits": 4 },
+      { "id": "SUB203", "name": "Database Management Systems", "credits": 4 },
+      { "id": "SUB204", "name": "Computer Organization", "credits": 3 }
+    ],
+    "sem-2": [
+      { "id": "SUB205", "name": "Operating Systems", "credits": 4 },
+      { "id": "SUB206", "name": "Design and Analysis of Algorithms", "credits": 4 },
+      { "id": "SUB207", "name": "Software Engineering", "credits": 3 },
+      { "id": "SUB208", "name": "Formal Languages & Automata Theory", "credits": 3 }
+    ]
+  },
+  "year-3": {
+    "sem-1": [
+        { "id": "SUB301", "name": "Computer Networks", "credits": 4 },
+        { "id": "SUB302", "name": "Artificial Intelligence", "credits": 4 },
+        { "id": "SUB303", "name": "Compiler Design", "credits": 4 },
+        { "id": "SUB304", "name": "Web Technologies", "credits": 3 }
+    ],
+    "sem-2": [
+        { "id": "SUB305", "name": "Machine Learning", "credits": 4 },
+        { "id": "SUB306", "name": "Cryptography and Network Security", "credits": 4 },
+        { "id": "SUB307", "name": "Data Mining", "credits": 3 },
+        { "id": "SUB308", "name": "Cloud Computing", "credits": 3 }
+    ]
+  },
+    "year-4": {
+    "sem-1": [
+        { "id": "SUB401", "name": "Big Data Analytics", "credits": 4 },
+        { "id": "SUB402", "name": "Internet of Things", "credits": 4 },
+        { "id": "SUB403", "name": "Project Work Phase I", "credits": 2 },
+        { "id": "SUB404", "name": "Elective I", "credits": 3 }
+    ],
+    "sem-2": [
+        { "id": "SUB405", "name": "Project Work Phase II", "credits": 6 },
+        { "id": "SUB406", "name": "Elective II", "credits": 3 },
+        { "id": "SUB407", "name": "Comprehensive Viva", "credits": 2 }
+    ]
+  }
+}
