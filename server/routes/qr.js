@@ -20,4 +20,16 @@ router.post('/start-session', auth, sessionController.startSession);
 // @access  Private (Student)
 router.post('/scan', auth, attendanceController.markAttendance);
 
+// @route   GET /api/qr/attendance/:token
+// @desc    Get live attendance statistics for a session
+// @access  Private (Faculty)
+router.get('/attendance/:token', auth, attendanceController.getAttendanceStats);
+
+// Test routes without auth for debugging
+router.get('/test/attendance/:token', attendanceController.getAttendanceStats);
+router.post('/test/scan', (req, res, next) => {
+  req.user = { id: 'test-student', rollNumber: 'TEST001' };
+  next();
+}, attendanceController.markAttendance);
+
 module.exports = router;

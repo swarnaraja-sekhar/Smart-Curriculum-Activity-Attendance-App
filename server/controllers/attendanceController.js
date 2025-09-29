@@ -81,3 +81,50 @@ exports.markAttendance = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get live attendance statistics for a session
+ */
+exports.getAttendanceStats = async (req, res) => {
+  try {
+    const { token } = req.params;
+    console.log('Fetching attendance stats for token:', token);
+
+    // Find the active session
+    const session = await QrSession.findOne({ 
+      sessionToken: token,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Invalid or expired session' });
+    }
+
+    // Count students who marked attendance as Present
+    const presentCount = await Attendance.countDocuments({
+      sessionToken: token,
+      status: 'Present'
+    });
+
+    // Get total students for this class (hardcoded for now, can be improved)
+    const totalStudents = 50;
+    const absentCount = totalStudents - presentCount;
+
+    console.log(`Attendance stats: ${presentCount}/${totalStudents} present`);
+
+    res.json({
+      total: totalStudents,
+      present: presentCount,
+      absent: absentCount,
+      sessionId: session._id,
+      timestamp: new Date()
+    });
+
+  } catch (error) {
+    console.error('Error fetching attendance stats:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch attendance stats',
+      error: error.message 
+    });
+  }
+};

@@ -39,50 +39,30 @@ const StudentQRScanner = () => {
       try {
         console.log('Raw scanned text:', decodedText);
         
-        // Try to parse the QR code data as JSON
-        let qrData;
-        try {
-          qrData = JSON.parse(decodedText);
-          console.log('Parsed QR data:', qrData);
-        } catch (parseError) {
-          console.error('Error parsing QR code as JSON:', parseError);
-          // If parsing fails, use the raw text as the session token
-          qrData = { sessionToken: decodedText };
-          console.log('Using raw text as session token');
-        }
+        // The QR code contains the dynamic token (baseToken_timestamp)
+        const qrToken = decodedText.trim();
+        console.log('Scanned QR token:', qrToken);
         
-        // Create attendance record locally since server endpoint is having issues
+        // Send to server to mark attendance
+        const response = await axios.post('/qr/scan', {
+          qrToken: qrToken
+        });
+        
+        console.log('Server response:', response.data);
+        setScanResult(response.data.message);
+        
+        // Also store locally for backup/demonstration
         const attendanceRecord = {
           studentId: user._id,
           studentName: user.name,
-          sessionToken: qrData.sessionToken,
-          classId: qrData.classId,
-          facultyId: qrData.facultyId,
-          subjectId: qrData.subjectId,
-          timestamp: new Date().toISOString()
+          qrToken: qrToken,
+          timestamp: new Date().toISOString(),
+          serverResponse: response.data
         };
         
-        // Log the attendance record for debugging
-        console.log('Created attendance record:', attendanceRecord);
-        
-        // Store in localStorage for demonstration purposes
         const attendanceHistory = JSON.parse(localStorage.getItem('attendanceHistory') || '[]');
         attendanceHistory.push(attendanceRecord);
         localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
-        
-        // Display success message
-        setScanResult('Attendance marked successfully!');
-        
-        /* 
-        // Uncomment this section when the server endpoint is working
-        const response = await axios.post('/api/attendance/scan', {
-          sessionToken: qrData.sessionToken,
-          classId: qrData.classId,
-          facultyId: qrData.facultyId,
-          subjectId: qrData.subjectId
-        });
-        setScanResult(response.data.message);
-        */
       } catch (err) {
         console.error('Scan processing error:', err);
         setError(err.response?.data?.message || 'Invalid QR Code or server error.');

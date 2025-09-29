@@ -167,16 +167,37 @@ const FacultyAttendance = () => {
     setError('');
   };
 
+  // Fetch live attendance data
+  const [attendanceData, setAttendanceData] = useState({ total: 0, present: 0, absent: 0 });
+
+  useEffect(() => {
+    if (!session.active || !session.token) return;
+
+    const fetchAttendance = async () => {
+      try {
+        const response = await axios.get(`/qr/attendance/${session.token}`);
+        setAttendanceData(response.data);
+        console.log('Updated attendance data:', response.data);
+      } catch (error) {
+        console.error('Failed to fetch attendance:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchAttendance();
+
+    // Then fetch every 5 seconds for live updates
+    const interval = setInterval(fetchAttendance, 5000);
+    return () => clearInterval(interval);
+  }, [session.active, session.token]);
+
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
-    // This part needs to be connected to real data later
-    const total = 50; // Placeholder
-    const present = liveStudents.length;
-    const absent = total - present;
+    const { total, present, absent } = attendanceData;
     const presentPercentage = total > 0 ? Math.round((present / total) * 100) : 0;
     
     return { total, present, absent, presentPercentage };
-  }, [liveStudents]);
+  }, [attendanceData]);
 
   if (!user || classIds.length === 0) {
     return (

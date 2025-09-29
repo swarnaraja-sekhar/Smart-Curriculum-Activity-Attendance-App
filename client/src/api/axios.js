@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use env variable or fallback to Render deployment URL
+// Use env variable or fallback to local development server
 // API_URL should be domain only (no /api at end)
-const API_URL = import.meta.env.VITE_API_URL || 'https://smart-curriculum-activity-attendance-app.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 console.log('API URL:', API_URL);
 
