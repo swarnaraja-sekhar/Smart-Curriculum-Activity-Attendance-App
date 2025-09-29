@@ -8,10 +8,16 @@ const Attendance = require('../models/Attendance');
 const { OPEN } = require('ws');
 
 const sessionController = require('../controllers/sessionController');
+const attendanceController = require('../controllers/attendanceController');
 
 // @route   POST /api/qr/start-session
 // @desc    Faculty starts a new QR attendance session and creates initial absent records
 // @access  Private (Faculty)
 router.post('/start-session', auth, sessionController.startSession);
+
+// @route   POST /api/qr/scan
+// @desc    Student scans QR code to mark attendance
+// @access  Private (Student)
+router.post('/scan', auth, attendanceController.markAttendance);
 
 module.exports = router;

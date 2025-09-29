@@ -41,7 +41,8 @@ const allowedOrigins = [
   "https://smart-curriculum-activity-attendance-app.vercel.app",
   "https://smart-curriculum-activity-attendanc-rosy.vercel.app",
   "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app",
-  "https://smart-curriculum-activity-attendance-app.onrender.com"
+  "https://smart-curriculum-activity-attendance-app.onrender.com",
+  "https://smart-curriculum-activity-attendance-app-up5p.onrender.com"
 ];
 
 // More robust CORS configuration

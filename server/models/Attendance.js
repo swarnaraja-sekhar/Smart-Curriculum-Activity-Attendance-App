@@ -18,6 +18,13 @@ const attendanceSchema = new mongoose.Schema({
     type: Date, 
     default: Date.now 
   },
+  period: {
+    type: String,
+    default: '1'
+  },
+  scannedAt: {
+    type: Date
+  },
   status: { 
     type: String, 
     enum: ["Present", "Absent"], 

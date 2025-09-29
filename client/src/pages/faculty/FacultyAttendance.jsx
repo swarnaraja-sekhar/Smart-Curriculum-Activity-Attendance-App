@@ -36,7 +36,7 @@ const FacultyAttendance = () => {
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
   
-  const [session, setSession] = useState({ active: false, token: null, expiresAt: null });
+  const [session, setSession] = useState({ active: false, token: null, baseToken: null, expiresAt: null });
   const [attendance, setAttendance] = useState({});
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [error, setError] = useState('');
@@ -69,6 +69,34 @@ const FacultyAttendance = () => {
     }, 1000);
     return () => clearInterval(timeInterval);
   }, []);
+
+  // --- DYNAMIC QR CODE GENERATION ---
+  useEffect(() => {
+    if (!session.active || !session.baseToken) return;
+
+    const generateNewQR = async () => {
+      try {
+        // Generate new QR code with timestamp for security
+        const timestamp = Date.now();
+        const dynamicToken = `${session.baseToken}_${timestamp}`;
+        
+        const qrUrl = await QRCode.toDataURL(dynamicToken, { width: 220, margin: 2 });
+        setQrCodeDataUrl(qrUrl);
+        
+        console.log('Generated new QR code:', dynamicToken);
+      } catch (error) {
+        console.error('Error generating QR code:', error);
+      }
+    };
+
+    // Generate initial QR code
+    generateNewQR();
+
+    // Generate new QR code every 10 seconds
+    const qrInterval = setInterval(generateNewQR, 10000);
+
+    return () => clearInterval(qrInterval);
+  }, [session.active, session.baseToken]);
 
   // --- REAL-TIME WEBSOCKET LOGIC ---
   useEffect(() => {
@@ -119,12 +147,13 @@ const FacultyAttendance = () => {
 
       const { sessionToken, expiresAt } = response.data;
       
-      // Generate QR code with the received token
-      const qrUrl = await QRCode.toDataURL(sessionToken, { width: 220, margin: 2 });
-      setQrCodeDataUrl(qrUrl);
-
-      // Set session state
-      setSession({ active: true, token: sessionToken, expiresAt });
+      // Set session state with base token for dynamic QR generation
+      setSession({ 
+        active: true, 
+        token: sessionToken, 
+        baseToken: sessionToken, 
+        expiresAt 
+      });
 
     } catch (err) {
       console.error('Failed to start session:', err);
@@ -133,7 +162,7 @@ const FacultyAttendance = () => {
   };
 
   const handleEndSession = () => {
-    setSession({ active: false, token: null, expiresAt: null });
+    setSession({ active: false, token: null, baseToken: null, expiresAt: null });
     setQrCodeDataUrl('');
     setError('');
   };
@@ -267,15 +296,25 @@ const FacultyAttendance = () => {
               </div>
             </div>
 
-            {/* QR Code Display */}
+            {/* Dynamic QR Code Display */}
             {session.active && qrCodeDataUrl && (
               <div className="bg-white p-6 rounded-2xl shadow-lg text-center">
                 <h3 className="text-lg font-bold text-gray-800 mb-2">Scan to Mark Attendance</h3>
-                <div className="flex justify-center my-4">
-                  <img src={qrCodeDataUrl} alt="Attendance QR Code" className="rounded-lg border-4 border-gray-200" />
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-3 text-sm text-yellow-800">
+                  🔄 QR code changes every 10 seconds for security
                 </div>
-                <div className="bg-gray-100 p-2 rounded-md text-sm text-gray-600">
+                <div className="flex justify-center my-4 relative">
+                  <img 
+                    src={qrCodeDataUrl} 
+                    alt="Dynamic Attendance QR Code" 
+                    className="rounded-lg border-4 border-green-200 animate-pulse" 
+                  />
+                </div>
+                <div className="bg-gray-100 p-2 rounded-md text-sm text-gray-600 mb-2">
                   Session expires at: {new Date(session.expiresAt).toLocaleTimeString()}
+                </div>
+                <div className="bg-green-50 p-2 rounded-md text-sm text-green-700">
+                  ✅ Unlimited students can scan • Each scan marks attendance
                 </div>
               </div>
             )}
