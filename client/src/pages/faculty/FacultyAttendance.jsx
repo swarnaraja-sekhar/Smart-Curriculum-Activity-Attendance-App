@@ -102,25 +102,67 @@ const FacultyAttendance = () => {
   useEffect(() => {
     if (!session.active) return;
 
-    const wsUrl = (import.meta.env.VITE_API_URL || 'ws://localhost:5001').replace(/^http/, 'ws');
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => console.log('WebSocket connection established.');
-    ws.onmessage = (event) => {
+    // Construct proper WebSocket URL
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://10.83.161.252:5001/api';
+    const baseUrl = apiUrl.replace('/api', '').replace(/^http/, 'ws');
+    const wsUrl = `${baseUrl}/ws`;
+    
+    console.log('Connecting to WebSocket:', wsUrl);
+    
+    let ws;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    const connect = () => {
       try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'ATTENDANCE_UPDATE') {
-          console.log('Real-time attendance update received for:', message.data.student.name);
-          setLiveStudents(prev => [message.data, ...prev]);
-        }
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          console.log('WebSocket connection established');
+          reconnectAttempts = 0; // Reset on successful connection
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            console.log('WebSocket message received:', message);
+            
+            if (message.type === 'ATTENDANCE_UPDATE') {
+              console.log('Real-time attendance update received');
+              setLiveStudents(prev => [message.data, ...prev]);
+            }
+          } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+          }
+        };
+        
+        ws.onclose = (event) => {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+          
+          // Attempt to reconnect if not intentionally closed
+          if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            console.log(`Attempting to reconnect... (${reconnectAttempts}/${maxReconnectAttempts})`);
+            setTimeout(connect, 3000 * reconnectAttempts); // Exponential backoff
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+        
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Failed to create WebSocket connection:', error);
       }
     };
-    ws.onclose = () => console.log('WebSocket connection closed.');
-    ws.onerror = (error) => console.error('WebSocket error:', error);
+    
+    connect();
 
-    return () => ws.close();
+    return () => {
+      if (ws) {
+        ws.close(1000, 'Component unmounted'); // Clean close
+      }
+    };
   }, [session.active]);
 
 

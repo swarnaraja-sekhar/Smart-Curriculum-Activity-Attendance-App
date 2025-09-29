@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use env variable or fallback to Render deployment for production
-// API_URL should be domain only (no /api at end)
-const API_URL = import.meta.env.VITE_API_URL || 'https://smart-curriculum-activity-attendance-app-up5p.onrender.com/api';
+// Use env variable or fallback - using local IP for mobile testing
+// API_URL should be domain only (no /api at end)  
+const API_URL = import.meta.env.VITE_API_URL || 'http://10.83.161.252:5001/api';
 
 console.log('API URL:', API_URL);
 
