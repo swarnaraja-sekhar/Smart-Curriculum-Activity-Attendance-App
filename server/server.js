@@ -36,9 +36,9 @@ wss.on('connection', (ws) => {
 });
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:5001",
+  "http://localhost:5173", // Local development
+  "http://localhost:5174", // Local development (alt port)
+  "http://localhost:5001", // Local backend
   "https://smart-curriculum-activity-attendance-app.vercel.app",
   "https://smart-curriculum-activity-attendanc-rosy.vercel.app",
   "https://smart-curriculum-activit-git-8dd264-swarna-rajasekhars-projects.vercel.app",
