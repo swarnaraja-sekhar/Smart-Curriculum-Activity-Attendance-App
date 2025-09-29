@@ -19,7 +19,8 @@ const studentSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true }, // Store hashed password
   branch: { type: String, required: true },
-  class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
+  class: { type: mongoose.Schema.Types.Mixed, required: true },  // Mixed type to handle both ObjectId and String
+  classId: { type: String },  // Alternative field for backward compatibility
   college: { type: mongoose.Schema.Types.ObjectId, ref: 'College', required: true },
   role: { type: String, default: 'student' },
   

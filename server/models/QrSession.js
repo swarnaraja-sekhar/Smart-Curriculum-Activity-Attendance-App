@@ -1,19 +1,16 @@
 const mongoose = require("mongoose");
 
 const qrSessionSchema = new mongoose.Schema({
-  class: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Class',
+  classId: { 
+    type: String,
     required: true 
   },
-  subject: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subject',
+  subjectId: {
+    type: String,
     required: true
   },
-  faculty: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Faculty',
+  facultyId: { 
+    type: String,
     required: true 
   },
   sessionToken: { 

@@ -2,13 +2,11 @@ const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
   classId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Class', // Assuming you have a Class model
+    type: String,  // Changed to String to match the data being sent
     required: true 
   },
   facultyId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Faculty', 
+    type: String,  // Changed to String to match the data being sent
     required: true 
   },
   studentId: { 

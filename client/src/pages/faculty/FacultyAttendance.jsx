@@ -106,6 +106,11 @@ const FacultyAttendance = () => {
     setLiveStudents([]); // Clear previous live attendance
 
     try {
+  console.log('Sending POST to /qr/start-session with:', {
+        classId: selectedClass,
+        subjectId: selectedSubject,
+        period: selectedPeriod,
+      });
       const response = await axios.post('/qr/start-session', {
         classId: selectedClass,
         subjectId: selectedSubject,

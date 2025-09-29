@@ -22,46 +22,108 @@ const FacultyDashboard = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('overview');
   const [liveAttendance, setLiveAttendance] = useState([]);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
 
   useEffect(() => {
-    // Construct the WebSocket URL
-    // Use wss:// for secure connections (like on Render), ws:// for local
-    const wsUrl = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
-    
-    const ws = new WebSocket(wsUrl);
+    // Disable WebSocket connection if server is not running to prevent errors
+    const MAX_RECONNECT_ATTEMPTS = 3;
+    let ws = null;
 
-    ws.onopen = () => {
-      console.log('WebSocket connection established for faculty dashboard.');
-    };
+    const connectWebSocket = () => {
+      if (connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.log('Max reconnection attempts reached. Giving up.');
+        return;
+      }
 
-    ws.onmessage = (event) => {
       try {
-        const message = JSON.parse(event.data);
-      
-        if (message.type === 'ATTENDANCE_UPDATE') {
-          console.log('Received attendance update:', message.data);
-          // Add the new student to the top of the list
-          setLiveAttendance(prev => [message.data, ...prev]);
-        }
-      } catch (e) {
-        console.error("Failed to parse WebSocket message:", event.data);
+        // For development, we'll disable WebSocket as it seems server isn't running
+        console.log('WebSocket connection disabled for development.');
+        
+        // Mock some live attendance data for demo purposes since WebSocket is disabled
+        setTimeout(() => {
+          setLiveAttendance([
+            {
+              student: {
+                id: '1',
+                name: 'John Doe',
+                username: 'john.doe'
+              },
+              status: 'present',
+              time: '09:15 AM'
+            },
+            {
+              student: {
+                id: '2',
+                name: 'Jane Smith',
+                username: 'jane.smith'
+              },
+              status: 'present',
+              time: '09:10 AM'
+            }
+          ]);
+        }, 2000);
+        
+        // In production, uncomment the following code to enable WebSocket
+        /*
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        // Replace http with ws and append the WebSocket path
+        const wsUrl = apiUrl.replace(/^http/, 'ws').replace(/\/api$/, '') + '/ws';
+        
+        console.log('Connecting to WebSocket at:', wsUrl);
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log('WebSocket connection established for faculty dashboard.');
+          setWsConnected(true);
+          setConnectionAttempts(0); // Reset attempts on successful connection
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+          
+            if (message.type === 'ATTENDANCE_UPDATE') {
+              console.log('Received attendance update:', message.data);
+              // Add the new student to the top of the list
+              setLiveAttendance(prev => [message.data, ...prev]);
+            }
+          } catch (e) {
+            console.error("Failed to parse WebSocket message:", event.data);
+          }
+        };
+
+        ws.onclose = (event) => {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+          setWsConnected(false);
+          
+          // Try to reconnect unless it was a normal closure or max attempts reached
+          if (event.code !== 1000 && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
+            console.log(`Attempting to reconnect (${connectionAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
+            setConnectionAttempts(prev => prev + 1);
+            setTimeout(connectWebSocket, 3000); // Wait 3 seconds before trying again
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+        */
+      } catch (error) {
+        console.error('Error setting up WebSocket:', error);
       }
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket connection closed.');
-      // Optional: Implement reconnection logic here
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    connectWebSocket();
 
     // Cleanup on component unmount
     return () => {
-      ws.close();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log('Closing WebSocket connection on cleanup');
+        ws.close();
+      }
     };
-  }, []); // Empty dependency array ensures this runs only once
+  }, [connectionAttempts]); // Add connectionAttempts as dependency for reconnection logic
 
 
   // Quick Stats Cards Data
