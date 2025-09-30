@@ -11,23 +11,36 @@ exports.markAttendance = async (req, res) => {
     const { qrToken } = req.body;
     const studentId = req.user.id;
 
-    console.log('QR Scan attempt:', { qrToken, studentId });
+    // --- Start of new logging ---
+    console.log('--- MARK ATTENDANCE DEBUG START ---');
+    console.log('Received raw qrToken:', qrToken);
+    console.log('Attempting scan for studentId:', studentId);
+    // --- End of new logging ---
 
     if (!qrToken) {
+      console.error('!!! ERROR: qrToken is missing from the request body.');
+      console.log('--- MARK ATTENDANCE DEBUG END ---');
       return res.status(400).json({ message: 'QR token is required.' });
     }
 
     // Extract base token from dynamic token (remove timestamp suffix)
     const baseToken = qrToken.split('_')[0];
-    console.log('Base token extracted:', baseToken);
+    console.log('Extracted baseToken:', baseToken);
 
     // Find the active session
+    console.log('Searching for active session with sessionToken:', baseToken);
     const session = await QrSession.findOne({ 
       sessionToken: baseToken,
       expiresAt: { $gt: new Date() }
     });
 
+    // --- More logging ---
     if (!session) {
+      console.error('!!! SESSION NOT FOUND !!!');
+      // Log all current sessions for debugging
+      const allSessions = await QrSession.find({ expiresAt: { $gt: new Date() } }).select('sessionToken expiresAt createdAt');
+      console.log('Currently active sessions in DB:', allSessions);
+      console.log('--- MARK ATTENDANCE DEBUG END ---');
       return res.status(404).json({ message: 'Invalid or expired QR code.' });
     }
 
